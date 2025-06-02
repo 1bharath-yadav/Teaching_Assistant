@@ -15,4 +15,5 @@ dependencies = [
     "asyncio",
     "html2text>=2025.4.15",
     "tiktoken>=0.9.0",
+    "typesense>=1.1.1",
 ]

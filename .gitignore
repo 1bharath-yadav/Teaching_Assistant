@@ -1,4 +1,4 @@
 .env
 cookie.json
-data
+data/tools-in-data-science-public/*
 .python-version
