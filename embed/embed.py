@@ -1,43 +1,20 @@
-import copy
 import json
-import os
 from pathlib import Path
-from typing import Dict, List
-
-import typesense
-from openai import OpenAI
-from typesense.exceptions import ObjectNotFound
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# Initialize clients
-openai_client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"), base_url="https://aipipe.org/openai/v1"
+from lib import (
+    create_collection,
+    DISCOURSE_SCHEMA,
+    CHAPTERS_SCHEMA,  # MODULE COLLECTIONSA ARE CREATED AT INDEXING.PY
+    index_discourse_posts,
+    index_module_chunks,
 )
 
-
-typesense_client = typesense.Client(
-    {
-        "api_key": os.getenv("TYPESENSE_API_KEY"),
-        "nodes": [
-            {"host": "localhost", "port": "8108", "protocol": "http"}
-        ],  # type: ignore
-        "connection_timeout_seconds": 10,
-    }
-)
-
-
-# Constants
-DATA_DIR = Path("/home/archer/projects/llm_tests/Teaching_Assistant/data/data")
-JSON_FILE = DATA_DIR / "processed_topics.json"
-DISCOURSE_COLLECTION = "discourse_posts"
-CHAPTER_COLLECTION = "chapters"
-BATCH_SIZE = 5  # Adjust batch size as needed
-EMBED_BATCH_SIZE = 5  # Batch size for embedding generation
+# Configuration
+DATA_DIR = Path("/home/archer/projects/llm_tests/Teaching_Assistant/data")
 MODULES_BASE_DIR = Path(
-    "/home/archer/projects/llm_tests/Teaching_Assistant/data/tools-in-data-science-public"
+    "/home/archer/projects/llm_tests/Teaching_Assistant/data/chapters/tools-in-data-science-public"
 )
+POSTS_JSON_FILE = DATA_DIR / "discourse" / "processed_topics.json"
+DISCOURSE_COLLECTION = "discourse_posts"
 
 MODULES = [
     "development_tools",
@@ -52,178 +29,29 @@ MODULES = [
     "misc",
 ]
 
-# Schemas
-DISCOURSE_SCHEMA = {
-    "name": DISCOURSE_COLLECTION,
-    "description": "Discourse posts to embed and index",
-    "fields": [
-        {"name": "topic_id", "type": "string"},
-        {"name": "topic_title", "type": "string"},
-        {"name": "content", "type": "string"},
-        {"name": "url", "type": "string"},
-        {"name": "timestamp", "type": "string"},
-        {"name": "embedding", "type": "float[]", "num_dim": 1536},
-    ],
-}
-
-CHAPTERS_SCHEMA = {
-    "name": CHAPTER_COLLECTION,
-    "description": "Chapters from various modules to embed and index",
-    "fields": [
-        {"name": "id", "type": "string"},
-        {"name": "content", "type": "string"},
-        {"name": "embedding", "type": "float[]", "num_dim": 1536},
-    ],
-}
-
-# ----------- Core Functions -----------
-
-
-def create_collection(name: str, schema: Dict) -> None:
-    schema_with_name = copy.deepcopy(schema)
-    schema_with_name["name"] = name
-    try:
-        typesense_client.collections[name].retrieve()
-        print(f"Collection {name} already exists.")
-    except ObjectNotFound:
-        typesense_client.collections.create(schema_with_name)
-        print(f"Created collection {name}.")
-
-
-def generate_embedding(text: str) -> List[float]:
-    try:
-        response = openai_client.embeddings.create(
-            model="text-embedding-3-small",
-            input=text,
-        )
-        print(response)
-        return response.data[0].embedding
-    except Exception as e:
-        print(f"Error generating embedding: {e}")
-        return []
-
-
-def index_discourse_posts(posts: List[Dict]) -> None:
-    texts = [post["content"] for post in posts]
-    embeddings = batch_generate_embeddings(texts)
-
-    jsonl_data = []
-    for post, embedding in zip(posts, embeddings):
-        if not embedding:
-            print(f"Skipping post {post['topic_id']} due to embedding error.")
-            continue
-        document = {
-            "topic_id": post["topic_id"],
-            "topic_title": post["topic_title"],
-            "content": post["content"],
-            "url": post["url"],
-            "timestamp": post["timestamp"],
-            "embedding": embedding,
-        }
-        jsonl_data.append(json.dumps(document))
-
-    if jsonl_data:
-        if jsonl_data:
-            documents = [json.loads(doc) for doc in jsonl_data]
-            batch_upsert_documents(DISCOURSE_COLLECTION, documents)
-            print(f"Indexed {len(documents)} posts in {DISCOURSE_COLLECTION}.")
-
-
-def index_module_chunks(module: str) -> None:
-    collection_name = module
-    create_collection(collection_name, CHAPTERS_SCHEMA)
-    chunks_file = MODULES_BASE_DIR / module / "chunks.json"
-    if not chunks_file.exists():
-        print(f"No chunks.json found in {module}")
-        return
-    with open(chunks_file, "r") as f:
-        chunks = json.load(f)
-    print(f"Loaded {len(chunks)} chunks from {chunks_file}: {chunks}")  # Debug
-    texts = [chunk["content"] for chunk in chunks]
-    embeddings = batch_generate_embeddings(texts)
-    batched_documents = []
-    for chunk, embedding in zip(chunks, embeddings):
-        if not embedding:
-            print(f"Skipping chunk {chunk['id']} due to embedding error.")
-            continue
-        document = {
-            "id": chunk["id"],
-            "content": chunk["content"],
-            "embedding": embedding,
-        }
-        batched_documents.append(document)
-    batch_upsert_documents(collection_name, batched_documents, BATCH_SIZE)
-    print(f"Indexed {len(batched_documents)} chunks in {collection_name}")
-
-
-# ----------- Orchestration -----------
-
 
 def process_discourse_posts() -> None:
-    if not JSON_FILE.exists():
-        print(f"No {JSON_FILE} found.")
+    """Process and index discourse posts."""
+    if not POSTS_JSON_FILE.exists():
+        print(f"No {POSTS_JSON_FILE} found.")
         return
+
     create_collection(DISCOURSE_COLLECTION, DISCOURSE_SCHEMA)
     try:
-        with open(JSON_FILE, "r") as f:
+        with open(POSTS_JSON_FILE, "r") as f:
             posts = json.load(f)
         if posts:
             index_discourse_posts(posts)
         else:
             print("No posts found in JSON.")
     except Exception as e:
-        print(f"Error reading {JSON_FILE}: {e}")
+        print(f"Error reading {POSTS_JSON_FILE}: {e}")
 
 
 def process_module_chunks() -> None:
+    """Process and index module chunks."""
     for module in MODULES:
-        index_module_chunks(module)
-
-
-# --- New: Batched Embedding Function ---
-
-
-def batch_generate_embeddings(
-    texts: List[str], batch_size: int = EMBED_BATCH_SIZE
-) -> List[List[float]]:
-    embeddings = []
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i : i + batch_size]
-        try:
-            response = openai_client.embeddings.create(
-                model="text-embedding-3-small",
-                input=batch,
-            )
-            batch_embeddings = [item.embedding for item in response.data]
-            embeddings.extend(batch_embeddings)
-            print(f"Generated embeddings for batch {i // batch_size + 1}.")
-        except Exception as e:
-            print(f"Error generating batch embeddings: {e}")
-            embeddings.extend([[] for _ in batch])  # Empty embeddings for failed ones
-    return embeddings
-
-
-#    ------- Batch Upsert Function -------
-def batch_upsert_documents(
-    collection_name: str, documents: List[Dict], batch_size: int = BATCH_SIZE
-) -> None:
-    for i in range(0, len(documents), batch_size):
-        batch = documents[i : i + batch_size]
-        jsonl_batch = [json.dumps(doc) for doc in batch]
-        try:
-            jsonl_string = "\n".join(jsonl_batch)
-            response = typesense_client.collections[collection_name].documents.import_(
-                jsonl_string, {"action": "upsert"}
-            )
-            print(f"Batch indexed {len(batch)} documents in {collection_name}.")
-            for res_str in response:
-                res = json.loads(res_str)
-                if not res["success"]:
-                    print(
-                        f"Error indexing document {res['document'].get('id', 'unknown')}: {res['error']}"
-                    )
-        except Exception as e:
-            print(f"Batch indexing error in {collection_name}: {e}")
+        index_module_chunks(module, MODULES_BASE_DIR)
 
 
 def main():

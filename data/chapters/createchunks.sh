@@ -4,7 +4,9 @@
 shopt -s globstar
 
 # Base directory
-BASE_DIR="/home/archer/projects/llm_tests/Teaching_Assistant/data/tools-in-data-science-public"
+BASE_DIR="/home/archer/projects/llm_tests/Teaching_Assistant/data/chapters/tools-in-data-science-public"
+
+cd $BASE_DIR
 
 # Directories to process
 DIRS=("development_tools" "deployment_tools" "large_language_models" "data_sourcing" "data_preparation" "data_analysis" "data_visualization" "project-1" "project-2" "misc")

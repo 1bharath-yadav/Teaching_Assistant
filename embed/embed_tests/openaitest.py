@@ -25,7 +25,6 @@ def generate_embedding(text: str) -> List[float]:
         return []
 
 
-# Test the function
 if __name__ == "__main__":
     test_text = "Hello, this is a test sentence for generating embeddings."
     embedding = generate_embedding(test_text)

@@ -1,4 +1,5 @@
 .env
 cookie.json
-data/tools-in-data-science-public/*
+data/chapters/tools-in-data-science-public/*
 .python-version
+typesense-data
