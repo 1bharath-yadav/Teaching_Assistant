@@ -2,7 +2,7 @@ from typing import List
 from .client import get_openai_client
 
 # Constants
-EMBED_BATCH_SIZE = 5
+EMBED_BATCH_SIZE = 100
 
 
 def generate_embedding(text: str) -> List[float]:

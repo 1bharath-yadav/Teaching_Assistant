@@ -1034,6 +1034,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/30/23/2f0a3efc4d6a32f3b63cdff36cd398d9701d26cda58e3ab97ac79fb5e60d/pyperclip-1.9.0.tar.gz", hash = "sha256:b7de0142ddc81bfc5c7507eea19da920b92252b548b96186caf94a5e2527d310", size = 20961, upload-time = "2024-06-18T20:38:48.401Z" }
 
 [[package]]
+name = "pytesseract"
+version = "0.3.13"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9f/a6/7d679b83c285974a7cb94d739b461fa7e7a9b17a3abfd7bf6cbc5c2394b0/pytesseract-0.3.13.tar.gz", hash = "sha256:4bf5f880c99406f52a3cfc2633e42d9dc67615e69d8a509d74867d3baddb5db9", size = 17689, upload-time = "2024-08-16T02:33:56.762Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7a/33/8312d7ce74670c9d39a532b2c246a853861120486be9443eebf048043637/pytesseract-0.3.13-py3-none-any.whl", hash = "sha256:7a99c6c2ac598360693d83a416e36e0b33a67638bb9d77fdcac094a3589d4b34", size = 14705, upload-time = "2024-08-16T02:36:10.09Z" },
+]
+
+[[package]]
 name = "python-dotenv"
 version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1222,7 +1235,9 @@ dependencies = [
     { name = "openai" },
     { name = "playwright" },
     { name = "pydantic" },
+    { name = "pytesseract" },
     { name = "python-dotenv" },
+    { name = "tesseract" },
     { name = "tiktoken" },
     { name = "typesense" },
     { name = "uvicorn" },
@@ -1238,11 +1253,19 @@ requires-dist = [
     { name = "openai", specifier = ">=1.82.1" },
     { name = "playwright" },
     { name = "pydantic" },
+    { name = "pytesseract", specifier = ">=0.3.13" },
     { name = "python-dotenv" },
+    { name = "tesseract", specifier = ">=0.1.3" },
     { name = "tiktoken", specifier = ">=0.9.0" },
     { name = "typesense", specifier = ">=1.1.1" },
     { name = "uvicorn" },
 ]
+
+[[package]]
+name = "tesseract"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8d/b7/c4fae9af5842f69d9c45bf1195a94aec090628535c102894552a7a7dbe6c/tesseract-0.1.3.tar.gz", hash = "sha256:4ab908f06ff15b60959ed0f200bddf8309ed02e6435ddc29445961cf8e3f5365", size = 45555135, upload-time = "2015-07-13T21:21:24.512Z" }
 
 [[package]]
 name = "tf-playwright-stealth"

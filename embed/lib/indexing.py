@@ -7,7 +7,7 @@ from .collections import create_collection
 from .schemas import CHAPTERS_SCHEMA
 
 # Constants
-BATCH_SIZE = 5
+BATCH_SIZE = 100
 DISCOURSE_COLLECTION = "discourse_posts"
 
 

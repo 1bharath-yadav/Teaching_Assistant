@@ -3,12 +3,18 @@ import sys
 import json
 import typesense
 from typesense.exceptions import TypesenseClientError
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 
 # Setup paths and client
 client = typesense.Client(
     {
         "api_key": os.getenv("TYPESENSE_API_KEY") or "conscious-field",
-        "nodes": [{"host": "localhost", "port": "8108", "protocol": "http"}],
+        "nodes": [{"host": "localhost", "port": "8108", "protocol": "http"}],  # type: ignore
         "connection_timeout_seconds": 5,
     }
 )
@@ -59,23 +65,6 @@ def main():
         print_sample_docs(module)
 
 
-import os
-from typesense import Client
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Initialize Typesense client
-client = Client(
-    {
-        "api_key": os.getenv("TYPESENSE_API_KEY"),
-        "nodes": [{"host": "localhost", "port": "8108", "protocol": "http"}],
-        "connection_timeout_seconds": 10,
-    }
-)
-
-
 def keyword_search(
     collection_name: str, query: str, query_by: str, num_results: int = 5
 ) -> None:
@@ -105,6 +94,17 @@ def keyword_search(
         print(f"Error searching {collection_name}: {e}")
 
 
+def list_collections():
+    """List all collections in Typesense."""
+    try:
+        collections = client.collections.retrieve()
+        print("Available collections:")
+        for collection in collections:
+            print(f"- {collection['name']}")
+    except Exception as e:
+        print(f"Error listing collections: {e}")
+
+
 def run_keyword_search_tests():
     """Run predefined keyword search tests on all collections."""
     # Test searches for discourse_posts
@@ -125,4 +125,6 @@ def run_keyword_search_tests():
 
 if __name__ == "__main__":
     main()
+
     run_keyword_search_tests()
+    list_collections()
