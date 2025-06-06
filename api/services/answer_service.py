@@ -102,8 +102,8 @@ Please provide a comprehensive answer based on the provided context. If the cont
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.7,  # Default temperature
-            max_tokens=1500,  # Default max tokens
+            temperature=config.llm_hyperparameters.answer_generation.temperature,
+            max_tokens=config.llm_hyperparameters.answer_generation.max_tokens,
         )
 
         answer = response.choices[0].message.content

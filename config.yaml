@@ -45,6 +45,8 @@ azure:
   base_url: "${AZURE_URL:-}"
   api_version: "${AZURE_API_VERSION:-2023-12-01-preview}"
   deployment_name: "${AZURE_DEPLOYMENT_NAME:-}"
+  max_tokens: 4096
+  temperature: 0.7
 
 # ******************** other AI providers ********************#
 
@@ -58,6 +60,8 @@ anthropic:
     - "claude-3-5-sonnet-20241022"
     - "claude-3-opus-20240229"
     - "claude-3-haiku-20240307"
+  max_tokens: 4096
+  temperature: 0.7
 
 # Google (Gemini)
 google:
@@ -67,6 +71,8 @@ google:
   models:
     - "gemini-1.5-pro"
     - "gemini-1.5-flash"
+  max_tokens: 4096
+  temperature: 0.7
 
 # === SEARCH & RAG CONFIGURATION ===
 
@@ -163,7 +169,7 @@ security:
 
 # Document Processing
 document_processing:
-  chunk_size: 1000
+  chunk_size: 3000
   chunk_overlap: 200
   min_chunk_length: 50
   max_chunk_length: 8000
@@ -213,22 +219,110 @@ rag_pipeline:
   enable_progress_tracking: true
   save_intermediate_results: true
 
+# ******************** LLM hyperparameters ********************#
+# Task-specific LLM parameters for different use cases
+
+llm_hyperparameters:
+  # Answer generation parameters
+  answer_generation:
+    temperature: 0.7        # Creative but controlled for Q&A
+    max_tokens: 1500       # Sufficient for comprehensive answers
+    
+  # Classification parameters  
+  classification:
+    temperature: 0.1        # Low temperature for consistent classification
+    max_tokens: 100        # Short response expected for classification
+    
+  # General chat parameters
+  general_chat:
+    temperature: 0.7        # Balanced creativity
+    max_tokens: 2000       # Standard response length
+    
+  # Tool calling parameters
+  tool_calling:
+    temperature: 0.1        # Precise for function calls
+    max_tokens: 200        # Brief structured responses
+
 # === HYBRID SEARCH CONFIGURATION ===
 # Configuration for the Teaching Assistant API hybrid search
 
 hybrid_search:
+  # Search Strategy Selection
+  # Options: "classification", "enhanced", "unified"
+  # - classification: Original LLM-based approach (slow but targeted)
+  # - enhanced: Keyword-based routing with fallback (fast, good coverage)
+  # - unified: Direct unified knowledge base search (fastest, comprehensive)
+  search_strategy: "unified"  # Choose your preferred strategy
+  
   # Search parameters
   alpha: 0.7                    # Hybrid search balance (0.0 = pure keyword, 1.0 = pure semantic)
   top_k: 5                     # Number of results to return
-  max_context_length: 50000     # Maximum context length for answer generation
+  max_context_length: 1000     # Maximum context length for answer generation
   num_typos: 4                  # Number of typos allowed in search
   
-  # Default collections to search (always included)
+  # Strategy-specific configurations
+  strategies:
+    # Classification-based search (original approach)
+    classification:
+      enabled: true
+      use_tool_calling: true    # Use Ollama tool calling for classification
+      max_classification_time: 10  # Max seconds for classification
+      fallback_collections:    # Collections to use if classification fails
+        - "discourse_posts_optimized"
+        - "chapters_misc"
+        - "unified_knowledge_base"
+    
+    # Enhanced keyword-based search
+    enhanced:
+      enabled: true
+      priority_collections:    # Always searched first
+        - "discourse_posts_optimized"
+        - "chapters_misc"
+      fallback_collection: "unified_knowledge_base"
+      use_fallback: true       # Enable fallback if insufficient results
+      min_results_for_fallback: 3  # Trigger fallback if fewer results
+      
+      # Keyword-to-collection mapping for fast routing
+      keyword_collections:
+        # Data sourcing
+        "scraping": ["chapters_data_sourcing"]
+        "scrape": ["chapters_data_sourcing"]
+        "api": ["chapters_data_sourcing"]
+        "data collection": ["chapters_data_sourcing"]
+        "web scraping": ["chapters_data_sourcing"]
+        # LLM and AI
+        "llm": ["chapters_large_language_models"]
+        "language model": ["chapters_large_language_models"]
+        "embedding": ["chapters_large_language_models"]
+        "prompt": ["chapters_large_language_models"]
+        "ai": ["chapters_large_language_models"]
+        # Development tools
+        "docker": ["chapters_development_tools", "chapters_deployment_tools"]
+        "git": ["chapters_development_tools"]
+        "python": ["chapters_development_tools"]
+        "development": ["chapters_development_tools"]
+        # Projects
+        "project": ["chapters_project-1", "chapters_project-2"]
+        "assignment": ["chapters_project-1", "chapters_project-2"]
+    
+    # Unified knowledge base search (fastest, most comprehensive)
+    unified:
+      enabled: true
+      primary_collection: "unified_knowledge_base"  # Contains all 1530 documents
+      max_results: 10          # Get more results for better coverage
+      content_type_boosting:   # Boost specific content types
+        discourse: 1.8         # Student Q&A gets highest priority
+        misc: 1.5             # Live sessions get high priority
+        technical: 1.2        # Technical content gets moderate boost
+        general: 1.0          # General content baseline
+      enable_content_filtering: true  # Enable filtering by content type
+  
+  # Default collections to search (legacy support)
   default_collections:
     - "chapters_misc"
     - "discourse_posts"
   
-  # Available collections for classification
+  # Available collections for classification (legacy support)
   available_collections:
     - "chapters_data_sourcing"
     - "chapters_data_preparation" 

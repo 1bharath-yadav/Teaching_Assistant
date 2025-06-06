@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 
 # ******************** application imports ********************#
 from ..models.schemas import QuestionRequest, QuestionResponse
-from ..services.classification_service import classify_question
+from ..services.smart_search_router import SmartSearchRouter
 from ..services.answer_service import hybrid_search_and_generate_answer
 from ..core.process import process_image_with_ocr
 from ..core.clients import config
@@ -71,16 +71,32 @@ async def handle_ask_question(
             question=enhanced_question, image=payload.image
         )
 
-        # Step 1: Classify the question to determine relevant collections
-        logger.info("Classifying question to determine relevant collections...")
-        classified_collections = await classify_question(search_payload)
-        logger.info(f"Classified collections: {classified_collections['collections']}")
+        # Initialize smart search router
+        search_router = SmartSearchRouter()
 
-        # Step 2: Perform hybrid search and generate answer with classified collections
-        logger.info("Starting hybrid search and answer generation...")
+        # Step 1: Use smart router to search with configured strategy
+        logger.info(f"Using search strategy: {config.hybrid_search.search_strategy}")
+        search_result = await search_router.search(search_payload)
+
+        # Extract results and metadata
+        search_results = search_result.get("results", [])
+        search_metadata = search_result.get("metadata", {})
+
+        logger.info(
+            f"Search completed: {len(search_results)} results in {search_metadata.get('search_time', 0):.3f}s using {search_metadata.get('strategy_used', 'unknown')} strategy"
+        )
+
+        # Step 2: Generate answer from search results
+        logger.info("Starting answer generation from search results...")
+
+        # Convert search results to the format expected by answer generation
+        collections_used = list(
+            set([result.get("collection", "unknown") for result in search_results])
+        )
+
         result = await hybrid_search_and_generate_answer(
             search_payload,
-            classified_collections["collections"],
+            collections_used,
             alpha=config.hybrid_search.alpha,
             top_k=config.hybrid_search.top_k,
         )

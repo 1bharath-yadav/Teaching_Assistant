@@ -67,6 +67,8 @@ class AzureConfig:
     base_url: str = ""
     api_version: str = "2023-12-01-preview"
     deployment_name: str = ""
+    max_tokens: int = 4096
+    temperature: float = 0.7
 
 
 @dataclass
@@ -78,6 +80,8 @@ class AnthropicConfig:
     base_url: str = "https://api.anthropic.com"
     api_version: str = "2023-06-01"
     models: List[str] = field(default_factory=list)
+    max_tokens: int = 4096
+    temperature: float = 0.7
 
 
 @dataclass
@@ -88,6 +92,34 @@ class GoogleConfig:
     api_key: str = ""
     base_url: str = "https://generativelanguage.googleapis.com"
     models: List[str] = field(default_factory=list)
+    max_tokens: int = 4096
+    temperature: float = 0.7
+
+
+@dataclass
+class LLMTaskConfig:
+    """Configuration for a specific LLM task"""
+
+    temperature: float = 0.7
+    max_tokens: int = 1500
+
+
+@dataclass
+class LLMHyperparametersConfig:
+    """Task-specific LLM parameters configuration"""
+
+    answer_generation: LLMTaskConfig = field(
+        default_factory=lambda: LLMTaskConfig(temperature=0.7, max_tokens=1500)
+    )
+    classification: LLMTaskConfig = field(
+        default_factory=lambda: LLMTaskConfig(temperature=0.1, max_tokens=100)
+    )
+    general_chat: LLMTaskConfig = field(
+        default_factory=lambda: LLMTaskConfig(temperature=0.7, max_tokens=2000)
+    )
+    tool_calling: LLMTaskConfig = field(
+        default_factory=lambda: LLMTaskConfig(temperature=0.1, max_tokens=200)
+    )
 
 
 @dataclass
@@ -285,13 +317,87 @@ class HybridSearchFallbackConfig:
 
 
 @dataclass
+class SearchStrategyConfig:
+    """Configuration for individual search strategies"""
+
+    enabled: bool = True
+
+
+@dataclass
+class ClassificationStrategyConfig(SearchStrategyConfig):
+    """Configuration for classification-based search strategy"""
+
+    use_tool_calling: bool = True
+    max_classification_time: int = 10
+    fallback_collections: List[str] = field(
+        default_factory=lambda: [
+            "discourse_posts_optimized",
+            "chapters_misc",
+            "unified_knowledge_base",
+        ]
+    )
+
+
+@dataclass
+class EnhancedStrategyConfig(SearchStrategyConfig):
+    """Configuration for enhanced keyword-based search strategy"""
+
+    priority_collections: List[str] = field(
+        default_factory=lambda: ["discourse_posts_optimized", "chapters_misc"]
+    )
+    fallback_collection: str = "unified_knowledge_base"
+    use_fallback: bool = True
+    min_results_for_fallback: int = 3
+    keyword_collections: Dict[str, List[str]] = field(default_factory=dict)
+
+
+@dataclass
+class UnifiedStrategyConfig(SearchStrategyConfig):
+    """Configuration for unified knowledge base search strategy"""
+
+    primary_collection: str = "unified_knowledge_base"
+    max_results: int = 10
+    content_type_boosting: Dict[str, float] = field(
+        default_factory=lambda: {
+            "discourse": 1.8,
+            "misc": 1.5,
+            "technical": 1.2,
+            "general": 1.0,
+        }
+    )
+    enable_content_filtering: bool = True
+
+
+@dataclass
+class HybridSearchStrategiesConfig:
+    """Configuration for all search strategies"""
+
+    classification: ClassificationStrategyConfig = field(
+        default_factory=ClassificationStrategyConfig
+    )
+    enhanced: EnhancedStrategyConfig = field(default_factory=EnhancedStrategyConfig)
+    unified: UnifiedStrategyConfig = field(default_factory=UnifiedStrategyConfig)
+
+
+@dataclass
 class HybridSearchConfig:
     """Hybrid search configuration"""
 
+    # Search strategy selection
+    search_strategy: str = "unified"  # Options: "classification", "enhanced", "unified"
+
+    # Search parameters
     alpha: float = 0.7
     top_k: int = 10
     max_context_length: int = 50000
     num_typos: int = 2
+
+    # Strategy configurations
+    strategies: HybridSearchStrategiesConfig = field(
+        default_factory=HybridSearchStrategiesConfig
+    )
+
+    # Legacy configurations (maintained for backwards compatibility)
     default_collections: List[str] = field(default_factory=list)
     available_collections: List[str] = field(default_factory=list)
     answer_generation: HybridSearchAnswerGenerationConfig = field(
@@ -327,6 +433,9 @@ class TeachingAssistantConfig:
     chapters: ChaptersConfig = field(default_factory=ChaptersConfig)
     rag_pipeline: RagPipelineConfig = field(default_factory=RagPipelineConfig)
     quality_control: QualityControlConfig = field(default_factory=QualityControlConfig)
+    llm_hyperparameters: LLMHyperparametersConfig = field(
+        default_factory=LLMHyperparametersConfig
+    )
     hybrid_search: HybridSearchConfig = field(default_factory=HybridSearchConfig)
     defaults: DefaultsConfig = field(default_factory=DefaultsConfig)
     model_dimensions: Dict[str, int] = field(default_factory=dict)
@@ -706,6 +815,65 @@ def get_current_embedding_dimensions() -> int:
         raise ValueError(f"Unsupported embedding provider: {provider}")
 
     return get_embedding_dimensions(model, provider)
+
+
+# ******************** utility functions for LLM hyperparameters ********************#
+
+
+def get_llm_hyperparameters(task: str = "general_chat") -> LLMTaskConfig:
+    """
+    Get LLM hyperparameters for a specific task
+
+    Args:
+        task: The task type ('answer_generation', 'classification', 'general_chat', 'tool_calling')
+
+    Returns:
+        LLMTaskConfig with temperature and max_tokens for the task
+    """
+    config = get_config()
+
+    if task == "answer_generation":
+        return config.llm_hyperparameters.answer_generation
+    elif task == "classification":
+        return config.llm_hyperparameters.classification
+    elif task == "general_chat":
+        return config.llm_hyperparameters.general_chat
+    elif task == "tool_calling":
+        return config.llm_hyperparameters.tool_calling
+    else:
+        logger.warning(f"Unknown task '{task}', returning general_chat hyperparameters")
+        return config.llm_hyperparameters.general_chat
+
+
+def get_provider_hyperparameters(provider: Optional[str] = None) -> tuple[float, int]:
+    """
+    Get default hyperparameters from the provider configuration
+
+    Args:
+        provider: The provider name ('openai', 'ollama', 'azure', 'anthropic', 'google')
+                 If None, uses the default chat provider
+
+    Returns:
+        Tuple of (temperature, max_tokens)
+    """
+    config = get_config()
+
+    if provider is None:
+        provider = config.defaults.chat_provider
+
+    if provider == "openai":
+        return config.openai.temperature, config.openai.max_tokens
+    elif provider == "ollama":
+        return config.ollama.temperature, config.ollama.max_tokens
+    elif provider == "azure":
+        return config.azure.temperature, config.azure.max_tokens
+    elif provider == "anthropic":
+        return config.anthropic.temperature, config.anthropic.max_tokens
+    elif provider == "google":
+        return config.google.temperature, config.google.max_tokens
+    else:
+        logger.warning(f"Unknown provider '{provider}', returning OpenAI defaults")
+        return config.openai.temperature, config.openai.max_tokens
 
 
 if __name__ == "__main__":

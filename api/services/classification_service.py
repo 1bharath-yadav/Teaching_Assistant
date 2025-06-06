@@ -192,8 +192,8 @@ Collections:"""
         response = openai_client.chat.completions.create(
             model=model_name,
             messages=[{"role": "user", "content": classification_prompt}],
-            temperature=0.1,  # Low temperature for consistent classification
-            max_tokens=100,  # Short response expected
+            temperature=config.llm_hyperparameters.classification.temperature,
+            max_tokens=config.llm_hyperparameters.classification.max_tokens,
         )
 
         # Parse text response

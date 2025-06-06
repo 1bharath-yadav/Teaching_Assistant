@@ -1,0 +1,641 @@
+{
+  "test_questions": [
+    "How to scrape data from websites using Python?",
+    "What is web scraping and how does it work?",
+    "How to use APIs for data collection?",
+    "How does LLM extraction work?",
+    "What is prompt engineering?",
+    "How to use embeddings for semantic search?",
+    "How to use Docker for development?",
+    "What is Git and how to use it?",
+    "How to set up VSCode for Python development?",
+    "I'm having trouble with my project submission",
+    "Can someone help me debug this error?",
+    "What are the assignment requirements?",
+    "What tools are covered in this course?",
+    "How to prepare data for analysis?",
+    "What visualization tools should I use?"
+  ],
+  "results": {
+    "classification_based": {
+      "times": [
+        6.553591966629028,
+        1.8102388381958008,
+        1.7029683589935303,
+        1.7417936325073242,
+        1.4825761318206787,
+        3.565075159072876,
+        1.4831509590148926,
+        1.8867032527923584,
+        2.3236777782440186,
+        1.9374079704284668,
+        4.913258075714111,
+        2.194528102874756,
+        4.321429252624512,
+        4.0741050243377686,
+        1.2694344520568848
+      ],
+      "evaluations": [
+        {
+          "num_results": 6,
+          "avg_score": 2.985190173950957e+18,
+          "max_score": 4046554612461731961,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": false,
+          "collections": [
+            "chapters_data_sourcing",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 4,
+          "avg_score": 3464455504367976569,
+          "max_score": 5194990075267514489,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": false,
+          "collections": [
+            "chapters_data_sourcing",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 3.4663320183838694e+18,
+          "max_score": 3467833194861035641,
+          "collections_covered": 2,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "chapters_data_sourcing",
+            "chapters_large_language_models"
+          ]
+        },
+        {
+          "num_results": 5,
+          "avg_score": 1155650017738883193,
+          "max_score": 1157451470367359097,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": false,
+          "collections": [
+            "chapters_development_tools",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 1,
+          "avg_score": 2310390568233992313,
+          "max_score": 2310390568233992313,
+          "collections_covered": 1,
+          "has_discourse": true,
+          "has_misc": false,
+          "collections": [
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 11,
+          "avg_score": 2.4178644306997233e+18,
+          "max_score": 2893615515400405113,
+          "collections_covered": 3,
+          "has_discourse": true,
+          "has_misc": false,
+          "collections": [
+            "chapters_data_sourcing",
+            "chapters_large_language_models",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 5,
+          "avg_score": 2.197348457912048e+18,
+          "max_score": 2889111915504599161,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": false,
+          "collections": [
+            "chapters_development_tools",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 2,
+          "avg_score": 3466707364076322937,
+          "max_score": 3467833263983165561,
+          "collections_covered": 2,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "chapters_data_sourcing",
+            "chapters_project-1"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 2.8891119157282954e+18,
+          "max_score": 3465581463766827129,
+          "collections_covered": 2,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "chapters_data_sourcing",
+            "chapters_development_tools"
+          ]
+        },
+        {
+          "num_results": 0,
+          "avg_score": 0,
+          "max_score": 0,
+          "collections_covered": 0,
+          "has_discourse": false,
+          "has_misc": false
+        },
+        {
+          "num_results": 41,
+          "avg_score": 1.1421829555628471e+18,
+          "max_score": 2310390567965556857,
+          "collections_covered": 10,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "unified_knowledge_base",
+            "chapters_project-2",
+            "chapters_large_language_models",
+            "chapters_project-1",
+            "chapters_data_sourcing",
+            "chapters_misc",
+            "chapters_deployment_tools",
+            "chapters_development_tools",
+            "discourse_posts_optimized",
+            "chapters_data_preparation"
+          ]
+        },
+        {
+          "num_results": 6,
+          "avg_score": 1.8311251199626227e+18,
+          "max_score": 2312642298657112185,
+          "collections_covered": 3,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "chapters_deployment_tools",
+            "chapters_project-1",
+            "chapters_project-2"
+          ]
+        },
+        {
+          "num_results": 19,
+          "avg_score": 2.7977347705204695e+18,
+          "max_score": 4044302674538004601,
+          "collections_covered": 11,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "unified_knowledge_base",
+            "chapters_project-2",
+            "chapters_large_language_models",
+            "chapters_data_visualization",
+            "chapters_project-1",
+            "chapters_data_sourcing",
+            "chapters_misc",
+            "chapters_deployment_tools",
+            "chapters_development_tools",
+            "discourse_posts_optimized",
+            "chapters_data_preparation"
+          ]
+        },
+        {
+          "num_results": 25,
+          "avg_score": 2.1967179539266353e+18,
+          "max_score": 3465581464437915769,
+          "collections_covered": 9,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "unified_knowledge_base",
+            "chapters_project-2",
+            "chapters_large_language_models",
+            "chapters_project-1",
+            "chapters_data_visualization",
+            "chapters_misc",
+            "chapters_development_tools",
+            "discourse_posts_optimized",
+            "chapters_data_preparation"
+          ]
+        },
+        {
+          "num_results": 1,
+          "avg_score": 578730054645710969,
+          "max_score": 578730054645710969,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "chapters_data_visualization"
+          ]
+        }
+      ]
+    },
+    "direct_unified": {
+      "times": [
+        0.011661052703857422,
+        0.013651371002197266,
+        0.015533685684204102,
+        0.01607227325439453,
+        0.02973151206970215,
+        0.018927574157714844,
+        0.022058486938476562,
+        0.017266511917114258,
+        0.04055428504943848,
+        0.012580394744873047,
+        0.021149396896362305,
+        0.008630990982055664,
+        0.013967752456665039,
+        0.012651681900024414,
+        0.008591413497924805
+      ],
+      "evaluations": [
+        {
+          "num_results": 1,
+          "avg_score": 4046554612461731961,
+          "max_score": 4046554612461731961,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 1,
+          "avg_score": 5194990075267514489,
+          "max_score": 5194990075267514489,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 2,
+          "avg_score": 3465581464303698041,
+          "max_score": 3465581464706351225,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 1.733921019524372e+18,
+          "max_score": 1733921019837546617,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 7,
+          "avg_score": 2.3119989963847296e+18,
+          "max_score": 2314894167190274169,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 2.891363715363024e+18,
+          "max_score": 2893615515400405113,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 5,
+          "avg_score": 2.889111915799878e+18,
+          "max_score": 2891363715184066681,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 2,
+          "avg_score": 4621898260615790713,
+          "max_score": 4623024160589742201,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 10,
+          "avg_score": 2.9474344105702067e+18,
+          "max_score": 3465581464303698041,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 2892864915507249273,
+          "max_score": 2893615515266187385,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 5,
+          "avg_score": 1618176750007615609,
+          "max_score": 2310390567965556857,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 1,
+          "avg_score": 2886860082270699641,
+          "max_score": 2886860082270699641,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 4.043552074868545e+18,
+          "max_score": 4044302674538004601,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 1,
+          "avg_score": 3465581464437915769,
+          "max_score": 3465581464437915769,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        },
+        {
+          "num_results": 1,
+          "avg_score": 3465581430078177401,
+          "max_score": 3465581430078177401,
+          "collections_covered": 1,
+          "has_discourse": false,
+          "has_misc": false,
+          "collections": [
+            "unified_knowledge_base"
+          ]
+        }
+      ]
+    },
+    "optimized_discourse_misc": {
+      "times": [
+        0.04155158996582031,
+        0.04087710380554199,
+        0.0287935733795166,
+        0.0473635196685791,
+        0.029076814651489258,
+        0.04326272010803223,
+        0.0580897331237793,
+        0.02874445915222168,
+        0.033926963806152344,
+        0.04884219169616699,
+        0.030578136444091797,
+        0.016502857208251953,
+        0.01856708526611328,
+        0.019675016403198242,
+        0.03967690467834473
+      ],
+      "evaluations": [
+        {
+          "num_results": 6,
+          "avg_score": 2.9851901623634934e+18,
+          "max_score": 4046554542936948857,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 5,
+          "avg_score": 3.464680696301434e+18,
+          "max_score": 5194990075267514489,
+          "collections_covered": 3,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_data_sourcing",
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 6,
+          "avg_score": 3.46783320642613e+18,
+          "max_score": 3470084994674720889,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 8,
+          "avg_score": 1372783118351597689,
+          "max_score": 1733921019837546617,
+          "collections_covered": 3,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "chapters_large_language_models",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 5,
+          "avg_score": 2312642367645024377,
+          "max_score": 2314894167190274169,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 7,
+          "avg_score": 2.560665802304614e+18,
+          "max_score": 2893615515400405113,
+          "collections_covered": 3,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "chapters_large_language_models",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 14,
+          "avg_score": 2.188630650094729e+18,
+          "max_score": 2891363715184066681,
+          "collections_covered": 4,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "chapters_development_tools",
+            "chapters_deployment_tools",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 4.236459305650007e+18,
+          "max_score": 4623024160589742201,
+          "collections_covered": 3,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "chapters_development_tools",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 7,
+          "avg_score": 2.889111916003122e+18,
+          "max_score": 3465581464303698041,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 8,
+          "avg_score": 2096184812036423801,
+          "max_score": 2893615515266187385,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 5,
+          "avg_score": 1618176750007615609,
+          "max_score": 2310390567965556857,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 2888361258703126649,
+          "max_score": 2889111847187775609,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 3,
+          "avg_score": 4.043552074868545e+18,
+          "max_score": 4044302674538004601,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 2,
+          "avg_score": 3178472589878100089,
+          "max_score": 3465581464437915769,
+          "collections_covered": 2,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized"
+          ]
+        },
+        {
+          "num_results": 7,
+          "avg_score": 2.313285724237239e+18,
+          "max_score": 3465581430078177401,
+          "collections_covered": 3,
+          "has_discourse": true,
+          "has_misc": true,
+          "collections": [
+            "chapters_misc",
+            "discourse_posts_optimized",
+            "chapters_data_visualization"
+          ]
+        }
+      ]
+    }
+  },
+  "config": {
+    "top_k": 5,
+    "num_typos": 4,
+    "alpha": 0.7
+  }
+}
