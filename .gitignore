@@ -1,24 +1,90 @@
+# Environment and secrets
 .env
+.env.local
+.env.*.local
 cookie.json
-data/chapters/tools-in-data-science-public/*
+*.key
+*.key.pub
 .python-version
-typesense-data
+
+# Data directories and files that shouldn't be tracked
+data/chapters/tools-in-data-science-public/*
+typesense-data/
+data/discourse/image_cache/
+data/processed_output/
+data/search_test_results/
+test_output/
+rag_analytics/
+api/analytics/rag_analytics/
+
+# Test and temporary files
+*_test_results.json
+*test_results*
+batch_embedding_test_results.json
+search_demo_results.json
+*enhanced_processed.json
+scraped_posts.json
+*.tmp
+*.temp
+
+# Test outputs and coverage
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
 
 # Dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
 # Production build
 build/
 dist/
+.next/
+out/
 
 # IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
 # OS generated files
 .DS_Store
@@ -30,9 +96,14 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-logs
+logs/
 *.log
+rag_pipeline*.log
+hybrid_search_test.log
+rag_pipeline_runner.log
 
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
 
 # Coverage directory used by tools like istanbul
 coverage/
@@ -49,6 +120,28 @@ coverage/
 
 # Output of 'npm pack'
 *.tgz
+
+# Package managers lock files (keep uv.lock for reproducibility)
+package-lock.json
+yarn.lock
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Docker
+*.dockerignore
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Linux
+*~
 
 # Yarn Integrity file
 .yarn-integrity

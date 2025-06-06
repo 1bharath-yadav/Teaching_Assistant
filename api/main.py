@@ -1,29 +1,43 @@
-import json
+# ******************** imports and setup ********************#
 import logging
 import os
 import sys
-import time
+import traceback
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from process import *
+
+# Add project root to Python path for proper imports
+current_dir = Path(__file__).parent
+project_root = current_dir.parent
+sys.path.insert(0, str(project_root))
+
+# FastAPI core imports
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
-# Configure logging with more detailed format
+# ******************** application imports ********************#
+from .models.schemas import QuestionRequest, QuestionResponse
+from .core.clients import config, openai_client, typesense_client
+from .services.classification_service import classify_question
+from .services.search_service import hybrid_search_across_collections
+from .handlers.question_handler import handle_ask_question
+
+# ******************** configuration and logging ********************#
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
+# ******************** FastAPI application setup ********************#
 app = FastAPI(
     title="Teaching Assistant API",
     description="API for answering student queries from TDS course",
     version="1.0.0",
 )
 
-# Add CORS middleware with more specific configuration
+# ******************** middleware configuration ********************#
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -33,34 +47,84 @@ app.add_middleware(
 )
 
 # Mount static files for the frontend
-frontend_build_path = Path(__file__).parent.parent / "frontend" / "build"
-if frontend_build_path.exists():
+frontend_build_path = project_root / "frontend" / ".next" / "standalone"
+frontend_static_path = project_root / "frontend" / ".next" / "static"
+frontend_public_path = project_root / "frontend" / "public"
+
+# Mount Next.js static files
+if frontend_static_path.exists():
     app.mount(
-        "/static",
-        StaticFiles(directory=str(frontend_build_path / "static")),
-        name="static",
+        "/_next/static",
+        StaticFiles(directory=str(frontend_static_path)),
+        name="next_static",
+    )
+
+# Mount public assets
+if frontend_public_path.exists():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=str(frontend_public_path)),
+        name="public_assets",
     )
 
 
-# Global exception handler
+# Global exception handler with better error details
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global exception on {request.url}: {exc}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error. Please try again later."},
-    )
+
+    # Return different error responses based on exception type
+    if isinstance(exc, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Invalid request data", "error": str(exc)},
+        )
+    elif isinstance(exc, ConnectionError):
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Service temporarily unavailable", "error": str(exc)},
+        )
+    else:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": config.hybrid_search.fallback.error_messages.get(
+                    "search_error", "Internal server error"
+                )
+            },
+        )
 
 
 # Serve the frontend at /chat
 @app.get("/chat")
 async def serve_chat():
     """Serve the chat frontend"""
+    frontend_html_path = (
+        Path(__file__).parent.parent
+        / "frontend"
+        / ".next"
+        / "standalone"
+        / ".next"
+        / "server"
+        / "app"
+        / "index.html"
+    )
 
-    frontend_build_path = Path(__file__).parent.parent / "frontend" / "build"
-    index_file = frontend_build_path / "index.html"
-    if index_file.exists():
-        return FileResponse(str(index_file))
+    if frontend_html_path.exists():
+        return FileResponse(str(frontend_html_path))
+
+    # Fallback to development server
+    from fastapi.responses import RedirectResponse
+
+    return RedirectResponse(url="http://localhost:3000")
+
+
+# Handle POST requests to /chat by redirecting to the proper API endpoint
+@app.post("/chat", response_model=QuestionResponse)
+async def chat_post(request: Request, payload: QuestionRequest) -> QuestionResponse:
+    """Handle POST requests to /chat - redirect to main API endpoint"""
+    logger.info("POST /chat request received, processing via main API endpoint")
+    return await handle_ask_question(request, payload, openai_client)
 
 
 # Add explicit OPTIONS handler for the API endpoint
@@ -74,128 +138,52 @@ async def options_ask():
 
 @app.post("/api/v1/ask", response_model=QuestionResponse)
 async def ask_question(request: Request, payload: QuestionRequest) -> QuestionResponse:
-    start_time = time.time()
-    try:
-        if payload.image:
-            logger.info("Image data received with question")
-
-        classified_collections = await classify_question(payload)
-        logger.info(f"Classified collections: {classified_collections['collections']}")
-
-        # Handle image and pdf processing if image is provided
-        enhanced_question = payload.question
-        if payload.image:
-            try:
-                logger.info("Processing image with OCR...")
-                ocr_text = process_image_with_ocr(payload.image)
-                if ocr_text:
-                    enhanced_question = (
-                        f"{payload.question}\n\nText extracted from image: {ocr_text}"
-                    )
-                    logger.info(
-                        f"Enhanced question with OCR text (length: {len(enhanced_question)})"
-                    )
-                else:
-                    logger.warning("No text extracted from image")
-            except Exception as ocr_error:
-                logger.error(f"OCR processing failed: {ocr_error}")
-                # Continue without OCR text
-
-        # Create enhanced payload for search
-        search_payload = QuestionRequest(
-            question=enhanced_question, image=payload.image
-        )
-
-        # Step 2: Perform hybrid search and generate answer
-        collections_to_search = classified_collections["collections"]
-        alpha = 0.5  # Balance between keyword and vector search
-        top_k = 7  # Number of top documents to retrieve
-
-        logger.info("Starting hybrid search and answer generation...")
-        search_results = await hybrid_search_and_generate_answer(
-            search_payload, collections_to_search, alpha, top_k
-        )
-
-        logger.info(f"Search results type: {type(search_results)}")
-
-        # Parse the JSON response
-        try:
-            parsed_response = json.loads(search_results)
-            answer = parsed_response.get("answer", search_results)
-            links = parsed_response.get("links", [])
-
-            logger.info("Successfully parsed JSON response")
-            logger.info(f"Answer length: {len(answer)} characters")
-            logger.info(f"Number of links: {len(links)}")
-
-            # Convert links to proper format for the response model
-            link_objects = []
-            source_strings = []
-
-            for link in links:
-                if isinstance(link, dict) and "url" in link and "text" in link:
-                    link_objects.append({"url": link["url"], "text": link["text"]})
-                    source_strings.append(
-                        link["url"]
-                    )  # Keep URLs as string sources for backward compatibility
-                elif isinstance(link, str):
-                    source_strings.append(link)
-
-        except (json.JSONDecodeError, TypeError) as json_error:
-            logger.warning(f"JSON parse error: {json_error}, using raw response")
-            answer = search_results
-            links = []
-            link_objects = []
-            source_strings = []
-
-        # Log performance metrics
-        duration = time.time() - start_time
-        logger.info(f"Total request processing time: {duration:.2f} seconds")
-
-        logger.info(f"Returning answer preview: {answer[:100]}...")
-
-        return QuestionResponse(
-            answer=answer,
-            sources=source_strings if source_strings else None,
-            links=link_objects if link_objects else None,
-        )
-
-    except HTTPException:
-        # Re-raise HTTP exceptions (they're already handled)
-        raise
-
-    except Exception as e:
-        logger.error(f"Error processing question: {e}")
-        logger.error(f"Exception type: {type(e)}")
-        import traceback
-
-        logger.error(f"Full traceback: {traceback.format_exc()}")
-
-        # Return a user-friendly error message
-        return QuestionResponse(
-            answer="I'm sorry, I encountered an error while processing your question. Please try again with a rephrased question or contact support if the issue persists.",
-            sources=None,
-            links=None,
-        )
+    """Main endpoint to ask questions about the TDS course."""
+    return await handle_ask_question(request, payload, openai_client)
 
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint with system status"""
+    """Enhanced health check endpoint with system status"""
     try:
         # Basic health checks
         status = {
             "status": "healthy",
             "service": "Teaching Assistant API",
             "version": "1.0.0",
+            "configuration": {
+                "chat_provider": config.defaults.chat_provider,
+                "embedding_provider": config.defaults.embedding_provider,
+                "search_provider": config.defaults.search_provider,
+                "hybrid_search_enabled": True,
+                "collections_available": len(
+                    config.hybrid_search.available_collections
+                ),
+            },
         }
+
+        # Test Typesense client - try to list collections
         try:
-            # Test Typesense client - try to list collections
             typesense_client.collections.retrieve()
             status["typesense_connection"] = "healthy"
         except Exception as e:
             logger.warning(f"Typesense connection issue: {e}")
             status["typesense_connection"] = "unhealthy"
+            status["status"] = "degraded"
+
+        # Test model provider connections
+        try:
+            if config.defaults.chat_provider == "openai":
+                # Simple test for OpenAI connection
+                status["model_provider"] = "openai_ready"
+            elif config.defaults.chat_provider == "ollama":
+                # Simple test for Ollama connection
+                status["model_provider"] = "ollama_ready"
+            else:
+                status["model_provider"] = f"{config.defaults.chat_provider}_configured"
+        except Exception as e:
+            logger.warning(f"Model provider issue: {e}")
+            status["model_provider"] = "unavailable"
             status["status"] = "degraded"
 
         return status
@@ -212,19 +200,26 @@ async def health_check():
 @app.get("/collections")
 async def get_collections():
     """Get available collections with descriptions"""
-    # Default collections with descriptions
-    default_collections = {
-        "data_sourcing": "Data collection and acquisition methods",
-        "data_preparation": "Data cleaning, preprocessing, transformation",
-        "data_analysis": "Statistical analysis, modeling techniques",
-        "data_visualization": "Charts, graphs, plotting libraries",
-        "large_language_models": "LLMs, transformers, NLP models",
-        "development_tools": "IDEs, libraries, frameworks",
-        "deployment_tools": "Docker, cloud platforms, CI/CD",
-        "project-1": "Building an API(RAG) that answers student questions",
-        "project-2": "Build LLMs to answer graded assignment questions",
-        "misc": "General course information and live recordings Q&A topics",
+    # Use configured collections from config.yaml
+    available_collections = config.hybrid_search.available_collections
+    default_collections = config.hybrid_search.default_collections
+
+    # Create descriptions mapping for available collections
+    collection_descriptions = {
+        "chapters_data_sourcing": "Data collection and acquisition methods",
+        "chapters_data_preparation": "Data cleaning, preprocessing, transformation",
+        "chapters_data_analysis": "Statistical analysis, modeling techniques",
+        "chapters_data_visualization": "Charts, graphs, plotting libraries",
+        "chapters_large_language_models": "LLMs, transformers, NLP models",
+        "chapters_development_tools": "IDEs, libraries, frameworks",
+        "chapters_deployment_tools": "Docker, cloud platforms, CI/CD",
+        "chapters_project-1": "Building an API(RAG) that answers student questions",
+        "chapters_project-2": "Build LLMs to answer graded assignment questions",
+        "chapters_misc": "General course information and live recordings Q&A topics",
         "discourse_posts": "Community discussions and Q&A",
+        "discourse_posts_optimized": "Community discussions and Q&A",
+        "discourse_posts_enhanced": "Community discussions and Q&A with images",
+        "unified_knowledge_base": "Combined knowledge from all chapters",
     }
 
     try:
@@ -240,17 +235,17 @@ async def get_collections():
             actual_collections = []
 
         return {
-            "collections": list(default_collections.keys()),
-            "descriptions": default_collections,
+            "collections": available_collections + default_collections,
+            "descriptions": collection_descriptions,
             "actual_collections": actual_collections,
-            "total": len(default_collections),
+            "total": len(available_collections) + len(default_collections),
         }
 
     except Exception as e:
         logger.error(f"Error getting collections: {e}")
         return {
             "error": "Failed to retrieve collections",
-            "collections": list(default_collections.keys()),
+            "collections": available_collections + default_collections,
         }
 
 
@@ -265,12 +260,12 @@ async def debug_search(payload: QuestionRequest):
         logger.info(
             f"Debug - Classified collections: {classified_collections['collections']}"
         )
-        # Perform hybrid search
+        # Perform hybrid search with configured parameters
         search_results = await hybrid_search_across_collections(
             payload,
             classified_collections["collections"],
-            top_k=5,
-            alpha=0.5,
+            top_k=config.hybrid_search.top_k,
+            alpha=config.hybrid_search.alpha,
             query_embedding=None,
         )
 
@@ -286,11 +281,9 @@ async def debug_search(payload: QuestionRequest):
                     ),
                     "content_length": len(content),
                     "collection": result["collection"],
-                    "hybrid_score": round(result["hybrid_score"], 4),
-                    "keyword_score": round(result["keyword_score"], 4),
-                    "vector_similarity": round(result["vector_similarity"], 4),
+                    "text_match": result.get("text_match", 0),
                     "vector_distance": result.get("vector_distance"),
-                    "text_match_raw": result.get("text_match_raw", 0),
+                    "has_vector_search": result.get("vector_distance") is not None,
                 }
             )
 
@@ -301,8 +294,8 @@ async def debug_search(payload: QuestionRequest):
             "total_results": len(search_results),
             "search_results": formatted_results,
             "search_parameters": {
-                "alpha": 0.5,
-                "top_k": 5,
+                "alpha": config.hybrid_search.alpha,
+                "top_k": config.hybrid_search.top_k,
                 "collections_searched": len(classified_collections["collections"]),
             },
         }
@@ -311,13 +304,49 @@ async def debug_search(payload: QuestionRequest):
         raise
     except Exception as e:
         logger.error(f"Debug search error: {e}")
-        import traceback
-
         logger.error(f"Debug search traceback: {traceback.format_exc()}")
         return {
             "error": str(e),
             "question": payload.question if payload else "No question provided",
         }
+
+
+@app.get("/api/v1/config")
+async def get_api_config():
+    """Get current API configuration (non-sensitive data only)"""
+    try:
+        return {
+            "hybrid_search": {
+                "alpha": config.hybrid_search.alpha,
+                "top_k": config.hybrid_search.top_k,
+                "max_context_length": config.hybrid_search.max_context_length,
+                "num_typos": config.hybrid_search.num_typos,
+                "available_collections": config.hybrid_search.available_collections,
+                "default_collections": config.hybrid_search.default_collections,
+                "streaming_enabled": config.hybrid_search.answer_generation.enable_streaming,
+                "link_extraction_enabled": config.hybrid_search.answer_generation.enable_link_extraction,
+            },
+            "providers": {
+                "chat_provider": config.defaults.chat_provider,
+                "embedding_provider": config.defaults.embedding_provider,
+                "search_provider": config.defaults.search_provider,
+            },
+            "models": {
+                "default_model": (
+                    getattr(config.ollama, "default_model", "gemma3:4b")
+                    if config.defaults.chat_provider == "ollama"
+                    else getattr(config.openai, "default_model", "gpt-4o-mini")
+                ),
+            },
+            "features": {
+                "image_processing": True,
+                "streaming_responses": config.hybrid_search.answer_generation.enable_streaming,
+                "link_extraction": config.hybrid_search.answer_generation.enable_link_extraction,
+            },
+        }
+    except Exception as e:
+        logger.error(f"Error getting config: {e}")
+        return {"error": "Failed to retrieve configuration"}
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# ******************** Typesense Server Startup Script ********************#
 # Check if typesense-data file exists else create dir and logs directory
 if [ ! -d "typesense-data" ]; then
   mkdir -p typesense-data 
@@ -8,8 +9,11 @@ else
   echo "typesense-data directory already exists."
 fi
 
+# ******************** environment configuration ********************#
 source .env
 
+# ******************** typesense server startup ********************#
+echo "Starting Typesense server..."
 typesense-server  \
   -p 8108:8108 \
   -v "$(pwd)/typesense-data" \
@@ -21,9 +25,10 @@ typesense-server  \
   --enable-search-logging \
   --api-address 0.0.0.0
 
+echo "Typesense server started on port 8108"
 
 
-
+# ******************** production docker configuration (commented) ********************#
 # Start the Typesense container for production server
 
 # docker run -d --name typesense \

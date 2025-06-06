@@ -1,0 +1,76 @@
+{
+  "name": "discourse_posts",
+  "fields": [
+    {
+      "name": "topic_id",
+      "type": "string"
+    },
+    {
+      "name": "topic_title",
+      "type": "string"
+    },
+    {
+      "name": "content",
+      "type": "string"
+    },
+    {
+      "name": "url",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": "string"
+    },
+    {
+      "name": "embedding",
+      "type": "float[]",
+      "num_dim": 768
+    },
+    {
+      "name": "post_count",
+      "type": "int32",
+      "optional": true
+    },
+    {
+      "name": "usernames",
+      "type": "string[]",
+      "facet": true,
+      "optional": true
+    },
+    {
+      "name": "mentions",
+      "type": "string[]",
+      "facet": true,
+      "optional": true
+    },
+    {
+      "name": "keywords",
+      "type": "string[]",
+      "facet": true,
+      "optional": true
+    },
+    {
+      "name": "image_urls",
+      "type": "string[]",
+      "facet": false,
+      "optional": true
+    },
+    {
+      "name": "image_descriptions",
+      "type": "string[]",
+      "facet": false,
+      "optional": true
+    },
+    {
+      "name": "extracted_text_from_images",
+      "type": "string",
+      "optional": true
+    },
+    {
+      "name": "has_images",
+      "type": "bool",
+      "facet": true,
+      "optional": true
+    }
+  ]
+}
