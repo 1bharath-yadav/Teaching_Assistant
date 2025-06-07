@@ -1,11 +1,10 @@
 import { getClientConfig } from "../config/client";
 import { SubmitKey } from "../store/config";
-import { LocaleType } from "./index";
 import { SAAS_CHAT_UTM_URL } from "@/app/constant";
 // if you are adding a new translation, please use PartialLocaleType instead of LocaleType
 
 const isApp = !!getClientConfig()?.isApp;
-const en: LocaleType = {
+const en = {
   WIP: "Coming Soon...",
   Error: {
     Unauthorized: isApp
@@ -28,7 +27,7 @@ const en: LocaleType = {
     Later: "Later",
     SaasTips: "Too Complex, Use Immediately Now",
     TopTips:
-      "🥳 NextChat AI launch promotion: Instantly unlock the latest models like OpenAI o1, GPT-4o, Claude-3.5!",
+      "🎓 Welcome to TDS Assistant! Your AI companion for the Tools in Data Science course at IIT Madras.",
   },
   ChatItem: {
     ChatItemCount: (count: number) => `${count} messages`,
@@ -315,11 +314,11 @@ const en: LocaleType = {
     },
     Access: {
       SaasStart: {
-        Title: "Use NextChat AI",
+        Title: "Use TDS Assistant",
         Label: " (Most Cost-Effective Option)",
         SubTitle:
-          "Maintained by NextChat, zero setup needed, unlock OpenAI o1, GPT-4o," +
-          " Claude-3.5 and more",
+          "Powered by TDS Assistant, designed for IIT Madras students to help with" +
+          " data science concepts, programming, and course materials.",
         ChatNow: "Start Now",
       },
       AccessCode: {
@@ -629,7 +628,7 @@ const en: LocaleType = {
   },
   Store: {
     DefaultTopic: "New Conversation",
-    BotHello: "Hello! How can I assist you today?",
+    BotHello: "Hello! I'm your TDS Assistant. I can help you with data science concepts, Python programming, course materials, and assignments for the Tools in Data Science course at IIT Madras. How can I assist you today?",
     Error: "Something went wrong, please try again later.",
     Prompt: {
       History: (content: string) =>

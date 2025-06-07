@@ -1,0 +1,116 @@
+# ******************** Docker Compose - Separate Deployment ********************#
+# Development environment with separate backend and frontend services
+
+version: '3.8'
+
+services:
+  # ******************** Backend Service ********************#
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: tds-assistant-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DEVELOPMENT=false
+      - LOG_LEVEL=INFO
+      # Add your environment variables here
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+      - TYPESENSE_URL=${TYPESENSE_URL:-http://typesense:8108}
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./data:/app/data:ro
+    networks:
+      - tds-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      - typesense
+
+  # ******************** Frontend Service ********************#
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+        - NEXT_PUBLIC_API_ENDPOINT=/api/v1/ask
+    container_name: tds-assistant-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_ENDPOINT=/api/v1/ask
+    networks:
+      - tds-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      - backend
+
+  # ******************** Typesense Service ********************#
+  typesense:
+    image: typesense/typesense:28
+    container_name: tds-assistant-typesense
+    restart: unless-stopped
+    ports:
+      - "8108:8108"
+    environment:
+      - TYPESENSE_DATA_DIR=/data
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY:-tds-assistant-key}
+      - TYPESENSE_ENABLE_CORS=true
+    volumes:
+      - typesense-data:/data
+    networks:
+      - tds-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8108/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ******************** Nginx Reverse Proxy (Optional) ********************#
+  nginx:
+    image: nginx:alpine
+    container_name: tds-assistant-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl/certs:ro  # If you have SSL certificates
+    networks:
+      - tds-network
+    depends_on:
+      - backend
+      - frontend
+    profiles:
+      - with-nginx  # Optional service, enable with: docker-compose --profile with-nginx up
+
+# ******************** Networks ********************#
+networks:
+  tds-network:
+    driver: bridge
+
+# ******************** Volumes ********************#
+volumes:
+  typesense-data:
+    driver: local

@@ -1,10 +1,16 @@
-# Teaching Assistant API Configuration Guide
+# Teaching Assistant Configuration Guide
 
-The Teaching Assistant API is now fully configurable through the `config.yaml` file in the root directory. This guide explains how to customize the hybrid search and answer generation behavior.
+The Teaching Assistant project is now fully configurable through the `config.yaml` file in the root directory and environment files. This guide explains how to customize the hybrid search, answer generation behavior, and project structure.
 
 ## Configuration Overview
 
-All configuration is managed through the centralized `config.yaml` file. The API automatically loads these settings and applies them to:
+Configuration is managed through:
+
+1. **Environment Variables**: Basic configuration via `.env` files
+2. **YAML Configuration**: Advanced settings in `config.yaml`
+3. **Runtime Configuration**: Settings that can be changed while the application is running
+
+All configuration is automatically loaded and applied to:
 
 - Model selection (OpenAI, Ollama, Azure, etc.)
 - Hybrid search parameters
@@ -12,6 +18,25 @@ All configuration is managed through the centralized `config.yaml` file. The API
 - System prompts
 - Error messages
 - Collection management
+
+## Project Directory Structure
+
+The TDS Teaching Assistant project follows this optimized directory structure:
+
+```
+TDS_Teaching_Assistant/
+├── api/              # Backend FastAPI application
+├── assets/           # Static assets including logos
+├── data/             # Data processing scripts and pipelines
+├── docker/           # Docker configurations
+├── docs/             # Documentation files
+├── frontend/         # Next.js frontend application
+├── kubernetes/       # Kubernetes deployment configurations
+├── lib/              # Shared library code
+├── logs/             # Application logs
+├── scripts/          # Utility scripts
+└── tests/            # Test suites
+```
 
 ## Key Configuration Sections
 

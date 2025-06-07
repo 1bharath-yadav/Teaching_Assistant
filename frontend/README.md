@@ -1,17 +1,14 @@
 <div align="center">
 
-<a href='https://nextchat.club'>
-  <img src="https://github.com/user-attachments/assets/83bdcc07-ae5e-4954-a53a-ac151ba6ccf3" width="1000" alt="icon"/>
+<a href='#'>
+  <img src="/assets/IIT-Madras-logo-vector-01.svg" width="200" alt="IIT Madras Logo"/>
 </a>
 
+<h1 align="center">TDS Assistant</h1>
 
+<p>Tools in Data Science Assistant for IIT Madras Online Degree Program</p>
 
-
-<h1 align="center">NextChat</h1>
-
-English / [简体中文](./README_CN.md)
-
-<a href="https://trendshift.io/repositories/5973" target="_blank"><img src="https://trendshift.io/api/badge/repositories/5973" alt="ChatGPTNextWeb%2FChatGPT-Next-Web | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://onlinedegree.iitm.ac.in/" target="_blank">IITM Online Degree Program</a>
 
 
 ✨ Light and Fast AI Assistant,with Claude, DeepSeek, GPT4 & Gemini Pro support. 

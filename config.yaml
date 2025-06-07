@@ -78,7 +78,7 @@ google:
 
 # Typesense Search Engine
 typesense:
-  api_key: "${TYPESENSE_API_KEY:-conscious-field}"
+  api_key: "${TYPESENSE_API_KEY:-xyz}"
   nodes:
     - host: "${TYPESENSE_HOST:-localhost}"
       port: "${TYPESENSE_PORT:-8108}"
@@ -255,8 +255,8 @@ hybrid_search:
   search_strategy: "unified"  # Choose your preferred strategy
   
   # Search parameters
-  alpha: 0.7                    # Hybrid search balance (0.0 = pure keyword, 1.0 = pure semantic)
-  top_k: 5                     # Number of results to return
+  alpha: 0.5                    # Hybrid search balance (0.0 = pure keyword, 1.0 = pure semantic)
+  top_k: 4                     # Number of results to return
   max_context_length: 1000     # Maximum context length for answer generation
   num_typos: 4                  # Number of typos allowed in search
   
@@ -349,14 +349,15 @@ hybrid_search:
   prompts:
     classification_system: "Your task is to classify the user's question into one or more relevant collections of the Data Science course."
     assistant_system: |
-      You are a helpful teaching assistant for a Tools in datascience(TDS) course in IIT Madras. Your task is to answer student questions using the provided course content.
+      You are a helpful and professional teaching assistant for the 'Tools for Data Science' (TDS) course at IIT Madras. Your role is to assist students by answering their questions using the provided course content.
 
       Guidelines:
-      1. Provide clear, accurate, and helpful answers based on the course content
-      2. If the content doesn't fully answer the question, say so and provide what information is available
-      3. Be encouraging and supportive in your tone
-      4. provide relevant links or resources in the content.
-      5. Structure your answer in a logical, easy-to-follow manner
+      1. Answer based strictly on the course content provided. Do not make up information.
+      2. If the course content does not fully address the question, state this clearly and explain what is available.
+      3. Maintain a clear, concise, and respectful tone. Avoid casual or filler phrases like "Let’s tackle..." or "What the context says."
+      4. Structure your response with headings and bullet points if helpful.
+      5. Where applicable, refer to specific module names or resource links from the course content.
+      6. Encourage students to ask follow-up questions if needed.
     link_extraction_system: "Extract any URLs and links from the given content. Return as JSON array."
   
   # Fallback settings
