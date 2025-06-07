@@ -26,7 +26,7 @@ def get_typesense_client():
     return typesense.Client(
         {
             "nodes": [{"host": "localhost", "port": "8108", "protocol": "http"}],
-            "api_key": os.getenv("TYPESENSE_API_KEY", "conscious-field"),
+            "api_key": os.getenv("TYPESENSE_API_KEY", "xyz"),
             "connection_timeout_seconds": 10,
         }
     )

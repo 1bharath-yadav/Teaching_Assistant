@@ -44,13 +44,18 @@ export class TDSApi implements LLMApi {
       onController?.(controller);
 
       const payload = this.convertMessagesToTDSPayload(messages, config);
-      const response = await this.sendTDSRequest(payload, controller);
       
-      const formattedResponse = this.convertTDSResponseToMessages(response);
-      
-      // Simulate streaming by calling onUpdate and then onFinish
-      onUpdate?.(formattedResponse, formattedResponse);
-      onFinish(formattedResponse, new Response(JSON.stringify(response)));
+      // Check if streaming is enabled
+      if (config.stream) {
+        await this.sendStreamingTDSRequest(payload, controller, onUpdate, onFinish, onError);
+      } else {
+        const response = await this.sendTDSRequest(payload, controller);
+        const formattedResponse = this.convertTDSResponseToMessages(response);
+        
+        // Simulate streaming by calling onUpdate and then onFinish
+        onUpdate?.(formattedResponse, formattedResponse);
+        onFinish(formattedResponse, new Response(JSON.stringify(response)));
+      }
       
     } catch (error) {
       console.error("TDS API chat error:", error);
@@ -85,6 +90,114 @@ export class TDSApi implements LLMApi {
         sorted: 1,
       },
     ];
+  }
+
+  private async sendStreamingTDSRequest(
+    payload: TDSApiRequestPayload,
+    controller: AbortController,
+    onUpdate?: (message: string, chunk: string) => void,
+    onFinish?: (message: string, responseRes: Response) => void,
+    onError?: (err: Error) => void
+  ): Promise<void> {
+    const streamingUrl = `${this.baseUrl}/api/v1/ask/stream`;
+    
+    try {
+      const response = await fetch(streamingUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "text/plain",
+          "Cache-Control": "no-cache",
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`TDS Streaming API Error: ${response.status} ${errorText}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("Response body is not readable");
+      }
+
+      const decoder = new TextDecoder();
+      let fullMessage = "";
+      let buffer = "";
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            break;
+          }
+
+          // Decode the chunk and add to buffer
+          buffer += decoder.decode(value, { stream: true });
+          
+          // Process complete lines (SSE format)
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+          for (const line of lines) {
+            if (line.trim() === '') continue;
+            
+            // Parse Server-Sent Events format
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6); // Remove 'data: ' prefix
+              
+              try {
+                const parsed = JSON.parse(data);
+                
+                if (parsed.type === 'chunk' && parsed.content) {
+                  // Streaming chunk
+                  fullMessage += parsed.content;
+                  onUpdate?.(fullMessage, parsed.content);
+                } else if (parsed.type === 'complete') {
+                  // Final complete response
+                  fullMessage = parsed.answer || fullMessage;
+                  const mockResponse = new Response(JSON.stringify(parsed));
+                  onFinish?.(fullMessage, mockResponse);
+                  return;
+                } else if (parsed.type === 'error') {
+                  // Error response
+                  throw new Error(parsed.message || parsed.error || "Streaming error");
+                } else if (parsed.type === 'status') {
+                  // Status messages (can be ignored or logged)
+                  console.log("TDS Status:", parsed.message);
+                  continue;
+                }
+              } catch (parseError) {
+                console.warn("Failed to parse SSE data:", data, parseError);
+                // Treat as plain text chunk if parsing fails
+                fullMessage += data;
+                onUpdate?.(fullMessage, data);
+              }
+            }
+          }
+        }
+
+        // If we reach here without a complete message, finish with what we have
+        if (fullMessage) {
+          const mockResponse = new Response(JSON.stringify({ answer: fullMessage }));
+          onFinish?.(fullMessage, mockResponse);
+        }
+
+      } finally {
+        reader.releaseLock();
+      }
+
+    } catch (error) {
+      console.error("Streaming request error:", error);
+      if (error instanceof Error) {
+        onError?.(error);
+      } else {
+        onError?.(new Error("Unknown streaming error"));
+      }
+    }
   }
 
   private async sendTDSRequest(

@@ -121,9 +121,6 @@ coverage/
 # Output of 'npm pack'
 *.tgz
 
-# Package managers lock files (keep uv.lock for reproducibility)
-package-lock.json
-yarn.lock
 
 # TypeScript build info
 *.tsbuildinfo

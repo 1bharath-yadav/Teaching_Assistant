@@ -39,6 +39,10 @@ dependencies = [
     "pandas>=2.3.0",
     "tqdm>=4.67.1",
     "pytest>=8.4.0",
+    "langchain-ollama>=0.3.3",
+    "langchain-core>=0.3.63",
+    "langchain>=0.3.25",
+    "langchain-community>=0.3.24",
 ]
 
 # ******************** torch configuration ********************#

@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-06-07 23:21:33",
+  "total_time_seconds": 2.304,
+  "embedding_provider": "ollama",
+  "embedding_model": "nomic-embed-text",
+  "test_results": [
+    {
+      "test_name": "data_cleaning",
+      "passed": 15,
+      "failed": 1,
+      "details": [
+        "\u2705 HTML comments removed",
+        "\u274c Excessive whitespace not normalized",
+        "\u2705 Metadata field 'has_code' extracted",
+        "\u2705 Metadata field 'has_images' extracted",
+        "\u2705 Metadata field 'has_links' extracted",
+        "\u2705 Metadata field 'has_tables' extracted",
+        "\u2705 Metadata field 'word_count' extracted",
+        "\u2705 Metadata field 'char_count' extracted",
+        "\u2705 Metadata field 'header_count' extracted",
+        "\u2705 Metadata field 'title' extracted",
+        "\u2705 Boolean metadata correctly detected",
+        "\u2705 Valid chunk accepted",
+        "\u2705 4/4 invalid chunks correctly rejected"
+      ]
+    },
+    {
+      "test_name": "embedding_generation",
+      "passed": 5,
+      "failed": 0,
+      "details": [
+        "\u2705 Embedding provider connection successful",
+        "\u2705 Single embedding generated (768 dimensions, 0.071s)",
+        "\u2705 Embedding dimensions correct (768)",
+        "\u2705 Batch embeddings generated (3 embeddings, 0.352s)",
+        "\u2705 Embeddings are sufficiently unique (avg similarity: 0.519)"
+      ]
+    },
+    {
+      "test_name": "chunking_processing",
+      "passed": 6,
+      "failed": 0,
+      "details": [
+        "\u2705 File processed successfully (5 chunks)",
+        "\u2705 Chunk has required field 'id'",
+        "\u2705 Chunk has required field 'content'",
+        "\u2705 Chunk has required field 'metadata'",
+        "\u2705 Chunk IDs are unique",
+        "\u2705 All chunks pass validation"
+      ]
+    },
+    {
+      "test_name": "indexing_functionality",
+      "passed": 3,
+      "failed": 0,
+      "details": [
+        "\u2705 Test collection created successfully",
+        "\u2705 All 3 documents indexed successfully",
+        "\u2705 Collection contains correct number of documents (3)"
+      ]
+    },
+    {
+      "test_name": "search_functionality",
+      "passed": 6,
+      "failed": 0,
+      "details": [
+        "\u2705 Text search returned 1 results",
+        "\u2705 Relevant document found in search results",
+        "\u2705 Faceted search found 2 tutorial documents",
+        "\u2705 Vector search returned 3 results",
+        "\u2705 Vector search ranking is accurate",
+        "\u2705 Hybrid search returned 3 results"
+      ]
+    }
+  ],
+  "summary": {
+    "total_tests": 36,
+    "total_passed": 35,
+    "total_failed": 1,
+    "success_rate": 97.2
+  }
+}

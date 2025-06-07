@@ -94,6 +94,7 @@ class UnifiedSearchService:
             "per_page": max_results,
             "num_typos": self.config.hybrid_search.num_typos,
             "highlight_full_fields": "content",
+            "exclude_fields": "embedding",  # Exclude large embedding vectors for performance
         }
 
         try:
@@ -114,9 +115,9 @@ class UnifiedSearchService:
                 if "vector_distance" in hit:
                     result["vector_distance"] = hit["vector_distance"]
 
-                # Detect content type for boosting
-                content = hit["document"].get("content", "").lower()
-                result["content_type"] = self._detect_content_type(content)
+                # Use pre-computed content type (optimized based on raw data analysis)
+                result["content_type"] = hit["document"].get("content_type", "general")
+                result["source_type"] = hit["document"].get("source_type", "unknown")
 
                 all_results.append(result)
 

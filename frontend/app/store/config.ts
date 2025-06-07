@@ -81,6 +81,7 @@ export const DEFAULT_CONFIG = {
     size: "1024x1024" as ModelSize,
     quality: "standard" as DalleQuality,
     style: "vivid" as DalleStyle,
+    stream: true, // Enable streaming by default for real-time responses
   },
 
   ttsConfig: {

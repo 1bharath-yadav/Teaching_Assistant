@@ -107,7 +107,14 @@ Please provide a comprehensive answer based on the provided context. If the cont
             else config.llm_hyperparameters.answer_generation.max_tokens
         )
 
-        # Build OpenAI parameters
+        # For streaming responses, use the streaming service
+        if chat_model == "ollama":
+            # Import streaming service here to avoid circular imports
+            from .streaming_answer_service import generate_answer_optimized
+
+            return await generate_answer_optimized(payload, max_context_length)
+
+        # Build OpenAI parameters for non-streaming
         openai_params = {
             "model": model_name,
             "messages": [

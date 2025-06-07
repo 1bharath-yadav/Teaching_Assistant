@@ -21,7 +21,7 @@ openai:
 
 # Ollama Configuration (Local LLM Server)
 ollama:
-  base_url: "${OLLAMA_BASE_URL:-http://localhost:11434/v1}"
+  base_url: "${OLLAMA_BASE_URL:-http://localhost:11434}"
   api_key: "${OLLAMA_API_KEY:-ollama}"  # Ollama typically doesn't require auth
   models:
     - "llama3.2:1b"
@@ -29,7 +29,7 @@ ollama:
     - "deepseek-r1:latest"
     - "nomic-embed-text:latest"
     - "gemma3:4b"
-  default_model: "gemma3:4b"
+  default_model: "llama3.2:1b"
   max_tokens: 4096
   temperature: 0.4
   # Embedding models for local RAG
@@ -371,7 +371,7 @@ hybrid_search:
   
 # ******************** quality control ********************#
 quality_control:
-  min_content_length: 50
+  min_content_length: 30
   max_content_length: 8000
   min_alpha_ratio: 0.3
   skip_header_only_chunks: true

@@ -7,7 +7,9 @@ echo "🌐 Starting Teaching Assistant Frontend (Separate Deployment)"
 
 # ******************** Environment Setup ********************#
 # Change to the frontend directory
-cd "$(dirname "$0")/../frontend"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FRONTEND_DIR="$SCRIPT_DIR/../frontend"
+cd "$FRONTEND_DIR"
 
 # Load frontend environment variables
 if [ -f .env.production ]; then
@@ -56,6 +58,11 @@ fi
 # ******************** Build Process ********************#
 echo "🔨 Building frontend for production..."
 
+# Ensure we're in the frontend directory (use absolute path resolution)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FRONTEND_DIR="$SCRIPT_DIR/../frontend"
+cd "$FRONTEND_DIR"
+
 # Clean previous builds
 if [ -d ".next" ]; then
     echo "🧹 Cleaning previous build..."
@@ -91,6 +98,11 @@ fi
 echo "🎯 Starting Next.js frontend server..."
 echo "📍 Frontend will be available at: http://localhost:${PORT:-3000}"
 echo "🔗 Backend API: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}"
+
+# Ensure we're in the frontend directory (use absolute path resolution)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FRONTEND_DIR="$SCRIPT_DIR/../frontend"
+cd "$FRONTEND_DIR"
 
 # Start the Next.js production server
 $PACKAGE_MANAGER start

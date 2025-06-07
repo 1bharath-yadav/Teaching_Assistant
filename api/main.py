@@ -15,7 +15,12 @@ sys.path.insert(0, str(project_root))
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import (
+    FileResponse,
+    JSONResponse,
+    RedirectResponse,
+    StreamingResponse,
+)
 
 # ******************** application imports ********************#
 from .models.schemas import QuestionRequest, QuestionResponse
@@ -23,6 +28,11 @@ from .core.clients import config, openai_client, typesense_client
 from .services.classification_service import classify_question
 from .services.search_service import hybrid_search_across_collections
 from .handlers.question_handler import handle_ask_question
+from .handlers.streaming_question_handler import (
+    handle_ask_question_streaming,
+    handle_ask_question as handle_ask_question_optimized,
+    handle_search_only,
+)
 
 # ******************** configuration and logging ********************#
 logging.basicConfig(
@@ -123,8 +133,8 @@ async def serve_chat():
 @app.post("/chat", response_model=QuestionResponse)
 async def chat_post(request: Request, payload: QuestionRequest) -> QuestionResponse:
     """Handle POST requests to /chat - redirect to main API endpoint"""
-    logger.info("POST /chat request received, processing via main API endpoint")
-    return await handle_ask_question(request, payload, openai_client)
+    logger.info("POST /chat request received, processing via optimized API endpoint")
+    return await handle_ask_question_optimized(request, payload, openai_client)
 
 
 # Add explicit OPTIONS handler for the API endpoint
@@ -133,13 +143,35 @@ async def options_ask():
     return {"message": "OK"}
 
 
+@app.options("/api/v1/ask/stream")
+async def options_ask_stream():
+    return {"message": "OK"}
+
+
+@app.options("/api/v1/search")
+async def options_search():
+    return {"message": "OK"}
+
+
 # ------------- """Main endpoint to ask questions about the TDS course""" -----------
 
 
 @app.post("/api/v1/ask", response_model=QuestionResponse)
 async def ask_question(request: Request, payload: QuestionRequest) -> QuestionResponse:
-    """Main endpoint to ask questions about the TDS course."""
-    return await handle_ask_question(request, payload, openai_client)
+    """Main endpoint to ask questions about the TDS course (optimized with LangChain ChatOllama)."""
+    return await handle_ask_question_optimized(request, payload, openai_client)
+
+
+@app.post("/api/v1/ask/stream")
+async def ask_question_streaming(request: Request, payload: QuestionRequest):
+    """Streaming endpoint for real-time question answering using Server-Sent Events (SSE)."""
+    return await handle_ask_question_streaming(request, payload, openai_client)
+
+
+@app.post("/api/v1/search")
+async def search_only(request: Request, payload: QuestionRequest):
+    """Search-only endpoint that returns search results without answer generation."""
+    return await handle_search_only(request, payload)
 
 
 @app.get("/health")
@@ -156,9 +188,18 @@ async def health_check():
                 "embedding_provider": config.defaults.embedding_provider,
                 "search_provider": config.defaults.search_provider,
                 "hybrid_search_enabled": True,
+                "streaming_enabled": True,
                 "collections_available": len(
                     config.hybrid_search.available_collections
                 ),
+            },
+            "endpoints": {
+                "question_answering": "/api/v1/ask",
+                "streaming_answering": "/api/v1/ask/stream",
+                "search_only": "/api/v1/search",
+                "health": "/health",
+                "collections": "/collections",
+                "config": "/api/v1/config",
             },
         }
 

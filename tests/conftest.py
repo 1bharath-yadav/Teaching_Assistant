@@ -44,6 +44,6 @@ def typesense_config():
     """Provide Typesense configuration for tests."""
     return {
         "nodes": [{"host": "localhost", "port": "8108", "protocol": "http"}],
-        "api_key": os.getenv("TYPESENSE_API_KEY", "conscious-field"),
+        "api_key": os.getenv("TYPESENSE_API_KEY", "xyz"),
         "connection_timeout_seconds": 10,
     }

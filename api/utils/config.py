@@ -25,7 +25,7 @@ class Config:
     OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "http://localhost:11434/v1")
 
     # Typesense settings
-    TYPESENSE_API_KEY = os.getenv("TYPESENSE_API_KEY", "conscious-field")
+    TYPESENSE_API_KEY = os.getenv("TYPESENSE_API_KEY", "xyz")
     TYPESENSE_HOST = os.getenv("TYPESENSE_HOST", "localhost")
     TYPESENSE_PORT = os.getenv("TYPESENSE_PORT", "8108")
     TYPESENSE_PROTOCOL = os.getenv("TYPESENSE_PROTOCOL", "http")

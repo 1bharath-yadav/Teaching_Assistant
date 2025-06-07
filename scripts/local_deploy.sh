@@ -121,7 +121,7 @@ OPENAI_API_KEY=your_openai_api_key_here
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
 # Typesense Configuration
-TYPESENSE_API_KEY=conscious-field
+TYPESENSE_API_KEY=xyz
 TYPESENSE_HOST=localhost
 TYPESENSE_PORT=8108
 TYPESENSE_PROTOCOL=http
