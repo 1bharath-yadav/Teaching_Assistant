@@ -14,6 +14,12 @@ class QuestionRequest(BaseModel):
 
     question: str
     image: Optional[str] = None  # base64-encoded
+    # Optional model parameters
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
+    top_p: Optional[float] = None
+    presence_penalty: Optional[float] = None
+    frequency_penalty: Optional[float] = None
 
 
 # ******************** response models ********************#

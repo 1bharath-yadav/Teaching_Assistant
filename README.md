@@ -1,24 +1,63 @@
-# Teaching Assistant
+# 🎓 TDS Teaching Assistant
 
-An intelligent AI-powered teaching assistant with RAG (Retrieval-Augmented Generation) capabilities.
+An intelligent AI-powered teaching assistant with RAG (Retrieval-Augmented Generation) capabilities for the TDS course.
 
-## Quick Start
+## 🚀 **Deployment Options**
+
+### **Option 1: Integrated Deployment (Simple)**
+```bash
+# Single command startup
+./start_server.sh       # Serves both API and frontend on port 8000
+```
+
+### **Option 2: Separate Deployment (Scalable)**
+```bash
+# Use the management script
+./manage_separate.sh setup    # One-time setup
+./manage_separate.sh dev      # Development mode
+./manage_separate.sh start    # Production mode
+
+# Or manually
+./start_backend.sh           # API server on port 8000
+./start_frontend.sh          # Frontend on port 3000
+```
+
+### **Option 3: Docker (Production-Ready)**
+```bash
+# Separate services with Docker Compose
+docker-compose -f docker-compose.separate.yml up
+
+# With reverse proxy
+docker-compose -f docker-compose.separate.yml --profile with-nginx up
+```
+
+**📖 For detailed deployment information:**
+- [Separate Deployment Guide](SEPARATE_DEPLOYMENT.md)
+- [Deployment Comparison](DEPLOYMENT_COMPARISON.md)
+
+## ⚡ **Quick Start**
 
 1. **Install dependencies**:
    ```bash
    uv install
    ```
 
-2. **Start services**:
+2. **Setup and start**:
    ```bash
-   ./start_typesense.sh    # Start Typesense server
-   ./start_server.sh       # Start API server
+   ./start_typesense.sh         # Start search service
+   ./manage_separate.sh setup   # Setup separate deployment
+   ./manage_separate.sh dev     # Start development servers
    ```
 
-3. **Run tests**:
+3. **Verify deployment**:
    ```bash
-   python run_tests.py all
+   ./verify_deployment.sh       # Test all services
    ```
+
+4. **Access the application**:
+   - **Frontend**: http://localhost:3000
+   - **API**: http://localhost:8000
+   - **API Docs**: http://localhost:8000/docs
 
 ## Project Structure
 

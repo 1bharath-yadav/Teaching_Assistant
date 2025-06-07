@@ -88,6 +88,10 @@ declare global {
       SILICONFLOW_URL?: string;
       SILICONFLOW_API_KEY?: string;
 
+      // TDS only
+      TDS_API_BASE_URL?: string;
+      TDS_API_KEY?: string;
+
       // custom template for preprocessing user input
       DEFAULT_INPUT_TEMPLATE?: string;
 
@@ -245,6 +249,10 @@ export const getServerSideConfig = () => {
     isSiliconFlow,
     siliconFlowUrl: process.env.SILICONFLOW_URL,
     siliconFlowApiKey: getApiKey(process.env.SILICONFLOW_API_KEY),
+
+    // TDS configuration
+    customApiBaseUrl: process.env.TDS_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL,
+    customApiKey: getApiKey(process.env.TDS_API_KEY),
 
     gtmId: process.env.GTM_ID,
     gaId: process.env.GA_ID || DEFAULT_GA_ID,

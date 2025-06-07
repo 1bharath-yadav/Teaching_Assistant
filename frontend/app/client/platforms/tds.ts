@@ -6,12 +6,18 @@ import {
   LLMUsage, 
   LLMModel, 
   RequestMessage,
-  SpeechOptions 
+  SpeechOptions,
+  LLMConfig
 } from "../api";
 
 export interface TDSApiRequestPayload {
   question: string;
   image?: string; // base64-encoded image
+  temperature?: number;
+  max_tokens?: number;
+  top_p?: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
 }
 
 export interface TDSApiResponse {
@@ -31,13 +37,13 @@ export class TDSApi implements LLMApi {
   }
 
   async chat(options: ChatOptions): Promise<void> {
-    const { messages, onUpdate, onFinish, onError, onController } = options;
+    const { messages, config, onUpdate, onFinish, onError, onController } = options;
     
     try {
       const controller = new AbortController();
       onController?.(controller);
 
-      const payload = this.convertMessagesToTDSPayload(messages);
+      const payload = this.convertMessagesToTDSPayload(messages, config);
       const response = await this.sendTDSRequest(payload, controller);
       
       const formattedResponse = this.convertTDSResponseToMessages(response);
@@ -106,7 +112,7 @@ export class TDSApi implements LLMApi {
   }
 
   // Convert NextChat message format to TDS API format
-  convertMessagesToTDSPayload(messages: RequestMessage[]): TDSApiRequestPayload {
+  convertMessagesToTDSPayload(messages: RequestMessage[], config: LLMConfig): TDSApiRequestPayload {
     // Get the last user message as the question
     const userMessages = messages.filter(msg => msg.role === "user");
     const lastUserMessage = userMessages[userMessages.length - 1];
@@ -148,6 +154,11 @@ export class TDSApi implements LLMApi {
     return {
       question: question || "Please help me with my question.",
       image,
+      temperature: config.temperature,
+      max_tokens: config.max_tokens,
+      top_p: config.top_p,
+      presence_penalty: config.presence_penalty,
+      frequency_penalty: config.frequency_penalty,
     };
   }
 

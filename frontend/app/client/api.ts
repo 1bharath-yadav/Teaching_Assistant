@@ -56,6 +56,7 @@ export interface LLMConfig {
   providerName?: string;
   temperature?: number;
   top_p?: number;
+  max_tokens?: number;
   stream?: boolean;
   presence_penalty?: number;
   frequency_penalty?: number;

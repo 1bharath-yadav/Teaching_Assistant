@@ -9,9 +9,9 @@ export const FETCH_COMMIT_URL = `https://api.github.com/repos/${OWNER}/${REPO}/c
 export const FETCH_TAG_URL = `https://api.github.com/repos/${OWNER}/${REPO}/tags?per_page=1`;
 export const RUNTIME_CONFIG_DOM = "danger-runtime-config";
 
-// TDS Assistant API Configuration
-export const TDS_API_BASE_URL = process.env.CUSTOM_API_BASE_URL || "http://localhost:8000";
-export const TDS_API_ENDPOINT = process.env.TDS_API_ENDPOINT || "/api/v1/ask";
+// TDS Assistant API Configuration - Separate Deployment
+export const TDS_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.CUSTOM_API_BASE_URL || "http://localhost:8000";
+export const TDS_API_ENDPOINT = process.env.NEXT_PUBLIC_API_ENDPOINT || process.env.TDS_API_ENDPOINT || "/api/v1/ask";
 
 export const STABILITY_BASE_URL = "https://api.stability.ai";
 

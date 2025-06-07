@@ -7,7 +7,7 @@ import {
 import { getClientConfig } from "../config/client";
 import { createPersistStore } from "../utils/store";
 import { clientUpdate } from "../utils";
-import ChatGptIcon from "../icons/chatgpt.png";
+import  IIT_Madras_logo  from "../icons/IIT-Madras-logo.svg";
 import Locale from "../locales";
 import { ClientApi } from "../client/api";
 
@@ -107,7 +107,7 @@ export const useUpdateStore = createPersistStore(
                         window.__TAURI__?.notification.sendNotification({
                           title: "NextChat",
                           body: `${Locale.Settings.Update.IsLatest}`,
-                          icon: `${ChatGptIcon.src}`,
+                          icon: `${IIT_Madras_logo.src}`,
                           sound: "Default",
                         });
                       } else {
@@ -117,7 +117,7 @@ export const useUpdateStore = createPersistStore(
                         window.__TAURI__?.notification.sendNotification({
                           title: "NextChat",
                           body: updateMessage,
-                          icon: `${ChatGptIcon.src}`,
+                          icon: `${IIT_Madras_logo.src}`,
                           sound: "Default",
                         });
                         clientUpdate();

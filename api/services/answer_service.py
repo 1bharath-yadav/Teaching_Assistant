@@ -95,16 +95,39 @@ Please provide a comprehensive answer based on the provided context. If the cont
 """
 
     try:
-        # Generate answer using the configured model
-        response = openai_client.chat.completions.create(
-            model=model_name,
-            messages=[
+        # Use request parameters with fallback to config values
+        temperature = (
+            payload.temperature
+            if payload.temperature is not None
+            else config.llm_hyperparameters.answer_generation.temperature
+        )
+        max_tokens = (
+            payload.max_tokens
+            if payload.max_tokens is not None
+            else config.llm_hyperparameters.answer_generation.max_tokens
+        )
+
+        # Build OpenAI parameters
+        openai_params = {
+            "model": model_name,
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=config.llm_hyperparameters.answer_generation.temperature,
-            max_tokens=config.llm_hyperparameters.answer_generation.max_tokens,
-        )
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+
+        # Add optional parameters if provided in request
+        if payload.top_p is not None:
+            openai_params["top_p"] = payload.top_p
+        if payload.presence_penalty is not None:
+            openai_params["presence_penalty"] = payload.presence_penalty
+        if payload.frequency_penalty is not None:
+            openai_params["frequency_penalty"] = payload.frequency_penalty
+
+        # Generate answer using the configured model
+        response = openai_client.chat.completions.create(**openai_params)
 
         answer = response.choices[0].message.content
         if answer:
@@ -146,14 +169,47 @@ async def enhance_answer_with_links(
             doc = result["document"]
             if "url" in doc and doc["url"]:
                 # Create a meaningful link text
-                link_text = doc.get("title", doc.get("id", "Reference"))
-                if link_text == doc.get("id"):
+                link_text = doc.get("title") or doc.get("id", "Reference")
+                if link_text == doc.get("id") or not link_text:
                     # Try to extract a better title from content
-                    content = doc.get("content", "")[:100]
+                    content = doc.get("content", "") or ""
                     if content:
-                        link_text = content.split("\n")[0].strip()
-                        if len(link_text) > 50:
-                            link_text = link_text[:50] + "..."
+                        # Clean HTML tags and entities from content
+                        clean_content = re.sub(r"<[^>]+>", "", content)
+                        clean_content = re.sub(r"&[a-zA-Z0-9#]+;", "", clean_content)
+
+                        # Get first meaningful line or sentence
+                        lines = clean_content.split("\n")
+                        for line in lines:
+                            line = line.strip()
+                            if line and len(line) > 10:  # Skip very short lines
+                                # Fix spacing issues (missing spaces after periods)
+                                line = re.sub(r"([.!?])([A-Z])", r"\1 \2", line)
+
+                                # Try to get first sentence or meaningful chunk
+                                sentences = re.split(r"[.!?]\s+", line)
+                                if sentences and len(sentences[0]) > 15:
+                                    link_text = sentences[0]
+                                    # Ensure it ends with proper punctuation
+                                    if not link_text.endswith((".", "!", "?")):
+                                        link_text += "..."
+                                else:
+                                    # For shorter content, clean up spacing
+                                    link_text = re.sub(r"\s+", " ", line)
+                                break
+
+                        # Truncate if too long
+                        if len(link_text) > 60:
+                            link_text = link_text[:57] + "..."
+
+                # Final cleanup - remove any remaining HTML entities and extra whitespace
+                if link_text:
+                    link_text = re.sub(r"&[a-zA-Z0-9#]+;", "", link_text)
+                    link_text = " ".join(link_text.split())
+
+                # Ensure we have a reasonable fallback
+                if not link_text or len(link_text.strip()) < 5:
+                    link_text = "Course Material"
 
                 links.append(LinkObject(url=doc["url"], text=link_text))
 
