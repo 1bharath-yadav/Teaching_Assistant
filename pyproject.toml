@@ -30,8 +30,6 @@ dependencies = [
     "requests>=2.32.3",
     "torch>=2.0.0",
     "torchvision>=0.15.0",
-    "easyocr>=1.7.2",
-    "opencv-python-headless>=4.8.0",
     "typing-extensions>=4.13.2",
     "langchain-text-splitters>=0.3.8",
     "sentence-transformers>=4.1.0",
@@ -43,6 +41,9 @@ dependencies = [
     "langchain-core>=0.3.63",
     "langchain>=0.3.25",
     "langchain-community>=0.3.24",
+    "lxml>=5.4.0",
+    "readability-lxml>=0.8.4.1",
+    "markdownify>=1.1.0",
 ]
 
 # ******************** torch configuration ********************#

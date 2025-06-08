@@ -1,0 +1,38 @@
+[
+  {
+    "topic_id": "discourse_123#0#d4a954b1",
+    "topic_title": "Introduction to Data Science",
+    "content": "Post 1: Welcome to this comprehensive introduction to data science. In this course, we'll cover various aspects including data collection, cleaning, analysis, and visualization. Let's start with understanding what data science is and why it's important in today's world. | Post 2: Great introduction! I'm particularly interested in the data visualization part. Could you elaborate on the tools we'll be using? I've heard about Python libraries like matplotlib and seaborn.",
+    "url": "https://discourse.onlinedegree.iitm.ac.in/t/123",
+    "timestamp": "2024-01-15",
+    "metadata": {
+      "original_topic_id": "123",
+      "chunk_index": 0,
+      "word_count": 70,
+      "char_count": 472,
+      "source_type": "discourse",
+      "chunk_type": "discourse_post",
+      "has_code": false,
+      "has_links": false,
+      "original_topic_title": "Introduction to Data Science"
+    }
+  },
+  {
+    "topic_id": "discourse_456#0#1c2345bb",
+    "topic_title": "Machine Learning Fundamentals",
+    "content": "Post 1: Machine learning is a subset of artificial intelligence that focuses on algorithms that can learn from data. We'll explore supervised learning, unsupervised learning, and reinforcement learning approaches.",
+    "url": "https://discourse.onlinedegree.iitm.ac.in/t/456",
+    "timestamp": "2024-01-20",
+    "metadata": {
+      "original_topic_id": "456",
+      "chunk_index": 0,
+      "word_count": 29,
+      "char_count": 213,
+      "source_type": "discourse",
+      "chunk_type": "discourse_post",
+      "has_code": false,
+      "has_links": false,
+      "original_topic_title": "Machine Learning Fundamentals"
+    }
+  }
+]

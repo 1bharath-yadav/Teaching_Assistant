@@ -500,6 +500,7 @@ export function ChatActions(props: {
   showPromptHints: () => void;
   hitBottom: boolean;
   uploading: boolean;
+  showUploadImage: boolean;
   setShowShortcutKeyModal: React.Dispatch<React.SetStateAction<boolean>>;
   setUserInput: (input: string) => void;
   setShowChatSidePanel: React.Dispatch<React.SetStateAction<boolean>>;
@@ -554,7 +555,6 @@ export function ChatActions(props: {
   }, [models, currentModel, currentProviderName]);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showPluginSelector, setShowPluginSelector] = useState(false);
-  const [showUploadImage, setShowUploadImage] = useState(false);
 
   const [showSizeSelector, setShowSizeSelector] = useState(false);
   const [showQualitySelector, setShowQualitySelector] = useState(false);
@@ -570,13 +570,6 @@ export function ChatActions(props: {
   const isMobileScreen = useMobileScreen();
 
   useEffect(() => {
-    const show = isVisionModel(currentModel);
-    setShowUploadImage(show);
-    if (!show) {
-      props.setAttachImages([]);
-      props.setUploading(false);
-    }
-
     // if current model is not available
     // switch to first available model
     const isUnavailableModel = !models.some((m) => m.name === currentModel);
@@ -621,7 +614,7 @@ export function ChatActions(props: {
           />
         )}
 
-        {showUploadImage && (
+        {props.showUploadImage && (
           <ChatAction
             onClick={props.uploadImage}
             text={Locale.Chat.InputActions.UploadImage}
@@ -1033,6 +1026,7 @@ function _Chat() {
   const navigate = useNavigate();
   const [attachImages, setAttachImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [showUploadImage, setShowUploadImage] = useState(false);
 
   // prompt hints
   const promptStore = usePromptStore();
@@ -1066,6 +1060,11 @@ function _Chat() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(measure, [userInput]);
+
+  // Always show upload button since backend supports OCR for all models
+  useEffect(() => {
+    setShowUploadImage(true);
+  }, []);
 
   // chat commands shortcuts
   const chatCommands = useChatCommand({
@@ -1561,7 +1560,7 @@ function _Chat() {
         const fileInput = document.createElement("input");
         fileInput.type = "file";
         fileInput.accept =
-          "image/png, image/jpeg, image/webp, image/heic, image/heif";
+          "image/png, image/jpeg, image/webp, image/heic, image/heif, application/pdf";
         fileInput.multiple = true;
         fileInput.onchange = (event: any) => {
           setUploading(true);
@@ -2053,6 +2052,7 @@ function _Chat() {
                 scrollToBottom={scrollToBottom}
                 hitBottom={hitBottom}
                 uploading={uploading}
+                showUploadImage={showUploadImage}
                 showPromptHints={() => {
                   // Click again to close
                   if (promptHints.length > 0) {

@@ -103,8 +103,22 @@ async def hybrid_search_across_collections(
 
                 # Process results
                 for hit in search_results.get("hits", []):
+                    document = dict(hit["document"])
+
+                    # Use clean_content if available, otherwise fallback to content
+                    if "clean_content" in document and document["clean_content"]:
+                        # Replace content with clean_content for better quality responses
+                        document["content"] = document["clean_content"]
+                        logger.debug(
+                            f"Using clean_content for document {document.get('id', 'unknown')}"
+                        )
+                    else:
+                        logger.debug(
+                            f"Using raw content for document {document.get('id', 'unknown')} (no clean_content available)"
+                        )
+
                     hit_data = {
-                        "document": hit["document"],
+                        "document": document,
                         "text_match": hit.get("text_match", 0),
                         "collection": collection_name,
                     }

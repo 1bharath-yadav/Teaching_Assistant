@@ -17,7 +17,8 @@ from fastapi.responses import JSONResponse
 from ..models.schemas import QuestionRequest, QuestionResponse
 from ..services.smart_search_router import SmartSearchRouter
 from ..services.answer_service import hybrid_search_and_generate_answer
-from ..core.process import process_image_with_ocr
+from ..services.multimodal_answer_service import multimodal_search_and_generate_answer
+from ..core.process import process_file_with_text_extraction
 from ..core.clients import config
 from ..utils.spell_check import spell_check_and_correct
 
@@ -47,59 +48,73 @@ async def handle_ask_question(
             )
             logger.info(f"Corrected question: {payload.question}")
 
-        # Handle image and PDF processing if image is provided
+        # Handle multimodal questions (with images) or regular text questions
         enhanced_question = payload.question
+
         if payload.image:
-            try:
-                logger.info("Processing image with OCR...")
-                ocr_text = process_image_with_ocr(payload.image)
-                if ocr_text:
-                    enhanced_question = (
-                        f"{payload.question}\n\nText extracted from image: {ocr_text}"
-                    )
-                    logger.info(
-                        f"Enhanced question with OCR text (length: {len(enhanced_question)})"
-                    )
-                else:
-                    logger.warning("No text extracted from image")
-            except Exception as ocr_error:
-                logger.error(f"OCR processing failed: {ocr_error}")
-                # Continue without OCR text
+            logger.info("Processing multimodal question with image data")
 
-        # Create enhanced payload for search
-        search_payload = QuestionRequest(
-            question=enhanced_question, image=payload.image
-        )
+            # Initialize smart search router for collections
+            search_router = SmartSearchRouter()
+            search_result = await search_router.search(payload)
+            search_results = search_result.get("results", [])
+            search_metadata = search_result.get("metadata", {})
 
-        # Initialize smart search router
-        search_router = SmartSearchRouter()
+            # Extract collections used in search
+            collections_used = list(
+                set([result.get("collection", "unknown") for result in search_results])
+            )
 
-        # Step 1: Use smart router to search with configured strategy
-        logger.info(f"Using search strategy: {config.hybrid_search.search_strategy}")
-        search_result = await search_router.search(search_payload)
+            logger.info(
+                f"Search completed: {len(search_results)} results in {search_metadata.get('search_time', 0):.3f}s using {search_metadata.get('strategy_used', 'unknown')} strategy"
+            )
 
-        # Extract results and metadata
-        search_results = search_result.get("results", [])
-        search_metadata = search_result.get("metadata", {})
+            # Use multimodal service for answer generation
+            result = await multimodal_search_and_generate_answer(
+                payload,
+                collections_used,
+                alpha=config.hybrid_search.alpha,
+                top_k=config.hybrid_search.top_k,
+            )
+        else:
+            logger.info("Processing text-only question")
 
-        logger.info(
-            f"Search completed: {len(search_results)} results in {search_metadata.get('search_time', 0):.3f}s using {search_metadata.get('strategy_used', 'unknown')} strategy"
-        )
+            # Create enhanced payload for search
+            search_payload = QuestionRequest(
+                question=enhanced_question, image=payload.image
+            )
 
-        # Step 2: Generate answer from search results
-        logger.info("Starting answer generation from search results...")
+            # Initialize smart search router
+            search_router = SmartSearchRouter()
 
-        # Convert search results to the format expected by answer generation
-        collections_used = list(
-            set([result.get("collection", "unknown") for result in search_results])
-        )
+            # Step 1: Use smart router to search with configured strategy
+            logger.info(
+                f"Using search strategy: {config.hybrid_search.search_strategy}"
+            )
+            search_result = await search_router.search(search_payload)
 
-        result = await hybrid_search_and_generate_answer(
-            search_payload,
-            collections_used,
-            alpha=config.hybrid_search.alpha,
-            top_k=config.hybrid_search.top_k,
-        )
+            # Extract results and metadata
+            search_results = search_result.get("results", [])
+            search_metadata = search_result.get("metadata", {})
+
+            logger.info(
+                f"Search completed: {len(search_results)} results in {search_metadata.get('search_time', 0):.3f}s using {search_metadata.get('strategy_used', 'unknown')} strategy"
+            )
+
+            # Step 2: Generate answer from search results
+            logger.info("Starting answer generation from search results...")
+
+            # Convert search results to the format expected by answer generation
+            collections_used = list(
+                set([result.get("collection", "unknown") for result in search_results])
+            )
+
+            result = await hybrid_search_and_generate_answer(
+                search_payload,
+                collections_used,
+                alpha=config.hybrid_search.alpha,
+                top_k=config.hybrid_search.top_k,
+            )
 
         logger.info(f"Search results type: {type(result)}")
 

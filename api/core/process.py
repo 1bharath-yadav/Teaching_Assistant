@@ -14,63 +14,55 @@ logger = logging.getLogger(__name__)
 
 # ******************** modular service imports ********************#
 from ..models.schemas import QuestionRequest, QuestionResponse, LinkObject
-from ..services.image_service import EnhancedImageProcessor
+from ..services.langchain_multimodal_service import (
+    multimodal_processor,
+    process_image_with_ocr as langchain_process_image_with_ocr,
+    process_file_with_text_extraction as langchain_process_file_with_text_extraction,
+    process_image_with_metadata as langchain_process_image_with_metadata,
+)
 from ..services.classification_service import classify_question
 from ..services.search_service import hybrid_search_across_collections
 from ..services.answer_service import hybrid_search_and_generate_answer
 
 # ******************** global service instances ********************#
-# Initialize global image processor for backward compatibility
-image_processor = EnhancedImageProcessor(use_ocr=True, ocr_languages=["en"])
+# Use simplified LangChain multimodal processor
+image_processor = multimodal_processor
 
 
 # ******************** backward compatibility functions ********************#
 def process_image_with_ocr(base64_image: str) -> str:
-    """Process base64 image and extract text using EasyOCR"""
+    """Process base64 image and extract text using LangChain multimodal capabilities"""
     try:
-        # Use the global image processor
-        result = image_processor.process_base64_image(base64_image)
-
-        if result["processing_successful"]:
-            extracted_text = result["extracted_text"]
-            if extracted_text:
-                logger.info(
-                    f"Successfully extracted text from image: {extracted_text[:100]}..."
-                )
-                return extracted_text
-            else:
-                logger.info("No text found in image")
-                return ""
-        else:
-            logger.error(
-                f"Image processing failed: {result.get('error', 'Unknown error')}"
-            )
-            return ""
-
+        # Use the simplified LangChain processor
+        return langchain_process_image_with_ocr(base64_image)
     except Exception as e:
         logger.error(f"Error processing image with OCR: {e}")
+        return ""
+
+
+def process_file_with_text_extraction(base64_data: str) -> str:
+    """Process base64 file (image or PDF) and extract text using LangChain multimodal capabilities"""
+    try:
+        # Use the simplified LangChain processor
+        return langchain_process_file_with_text_extraction(base64_data)
+    except Exception as e:
+        logger.error(f"Error processing file with text extraction: {e}")
         return ""
 
 
 def process_image_with_metadata(base64_image: str) -> Dict[str, Any]:
     """Process base64 image and return detailed metadata along with extracted text"""
     try:
-        result = image_processor.process_base64_image(base64_image)
+        result = langchain_process_image_with_metadata(base64_image)
 
-        # Enhance with additional metadata
+        # Enhance with additional metadata for backward compatibility
         result.update(
             {
                 "timestamp": time.time(),
-                "ocr_method": (
-                    "easyocr"
-                    if hasattr(image_processor, "use_ocr") and image_processor.use_ocr
-                    else "fallback"
-                ),
-                "languages_supported": (
-                    image_processor.ocr_languages
-                    if hasattr(image_processor, "ocr_languages")
-                    else []
-                ),
+                "ocr_method": result.get("processor", "langchain_multimodal"),
+                "languages_supported": [
+                    "en"
+                ],  # LangChain models typically support many languages
             }
         )
 
@@ -139,7 +131,9 @@ __all__ = [
     "hybrid_search_across_collections",
     "hybrid_search_and_generate_answer",
     "process_image_with_ocr",
+    "process_file_with_text_extraction",
     "process_image_with_metadata",
     "process_question_request",
-    "image_processor",
+    "image_processor",  # This is now the LangChain multimodal processor
+    "multimodal_processor",  # Direct access to the new processor
 ]

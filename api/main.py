@@ -158,8 +158,8 @@ async def options_search():
 
 @app.post("/api/v1/ask", response_model=QuestionResponse)
 async def ask_question(request: Request, payload: QuestionRequest) -> QuestionResponse:
-    """Main endpoint to ask questions about the TDS course (optimized with LangChain ChatOllama)."""
-    return await handle_ask_question_optimized(request, payload, openai_client)
+    """Main endpoint to ask questions about the TDS course (with full multimodal support)."""
+    return await handle_ask_question(request, payload, openai_client)
 
 
 @app.post("/api/v1/ask/stream")

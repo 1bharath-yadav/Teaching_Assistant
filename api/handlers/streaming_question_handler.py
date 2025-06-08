@@ -27,7 +27,7 @@ from ..services.streaming_answer_service import (
     generate_answer_optimized,
 )
 from ..services.unified_search_service import unified_search
-from ..core.process import process_image_with_ocr
+from ..core.process import process_file_with_text_extraction
 from ..core.clients import config
 from ..utils.spell_check import spell_check_and_correct
 
@@ -65,18 +65,18 @@ async def handle_ask_question_streaming(
             enhanced_question = payload.question
             if payload.image:
                 try:
-                    logger.info("Processing image with OCR...")
-                    ocr_text = process_image_with_ocr(payload.image)
-                    if ocr_text:
-                        enhanced_question = f"{payload.question}\n\nText extracted from image: {ocr_text}"
+                    logger.info("Processing file (image/PDF) with text extraction...")
+                    extracted_text = process_file_with_text_extraction(payload.image)
+                    if extracted_text:
+                        enhanced_question = f"{payload.question}\n\nText extracted from file: {extracted_text}"
                         logger.info(
-                            f"Enhanced question with OCR text (length: {len(enhanced_question)})"
+                            f"Enhanced question with extracted text (length: {len(enhanced_question)})"
                         )
                     else:
-                        logger.warning("No text extracted from image")
-                except Exception as ocr_error:
-                    logger.error(f"OCR processing failed: {ocr_error}")
-                    # Continue without OCR text
+                        logger.warning("No text extracted from file")
+                except Exception as extraction_error:
+                    logger.error(f"Text extraction failed: {extraction_error}")
+                    # Continue without extracted text
 
             # Create enhanced payload for search
             search_payload = QuestionRequest(
@@ -157,20 +157,18 @@ async def handle_ask_question(
         enhanced_question = payload.question
         if payload.image:
             try:
-                logger.info("Processing image with OCR...")
-                ocr_text = process_image_with_ocr(payload.image)
-                if ocr_text:
-                    enhanced_question = (
-                        f"{payload.question}\n\nText extracted from image: {ocr_text}"
-                    )
+                logger.info("Processing file (image/PDF) with text extraction...")
+                extracted_text = process_file_with_text_extraction(payload.image)
+                if extracted_text:
+                    enhanced_question = f"{payload.question}\n\nText extracted from file: {extracted_text}"
                     logger.info(
-                        f"Enhanced question with OCR text (length: {len(enhanced_question)})"
+                        f"Enhanced question with extracted text (length: {len(enhanced_question)})"
                     )
                 else:
-                    logger.warning("No text extracted from image")
-            except Exception as ocr_error:
-                logger.error(f"OCR processing failed: {ocr_error}")
-                # Continue without OCR text
+                    logger.warning("No text extracted from file")
+            except Exception as extraction_error:
+                logger.error(f"Text extraction failed: {extraction_error}")
+                # Continue without extracted text
 
         # Create enhanced payload for search
         search_payload = QuestionRequest(

@@ -21,9 +21,8 @@ from enum import Enum
 from ..core.clients import config, typesense_client
 from ..models.schemas import QuestionRequest
 
-# Import all search strategies
+# Import available search strategies
 from ..services.classification_service import classify_question
-from ..services.enhanced_search_service import enhanced_search
 from ..services.unified_search_service import unified_search
 
 # ******************** configuration and logging ********************#
@@ -34,7 +33,6 @@ class SearchStrategy(Enum):
     """Available search strategies"""
 
     CLASSIFICATION = "classification"
-    ENHANCED = "enhanced"
     UNIFIED = "unified"
 
 
@@ -62,7 +60,6 @@ class SmartSearchRouter:
         # Performance tracking
         self.performance_stats = {
             "classification": {"total_calls": 0, "total_time": 0.0, "avg_results": 0.0},
-            "enhanced": {"total_calls": 0, "total_time": 0.0, "avg_results": 0.0},
             "unified": {"total_calls": 0, "total_time": 0.0, "avg_results": 0.0},
         }
 
@@ -101,8 +98,6 @@ class SmartSearchRouter:
             # Route to appropriate search method
             if strategy == SearchStrategy.CLASSIFICATION:
                 results = await self._classification_search(payload)
-            elif strategy == SearchStrategy.ENHANCED:
-                results = await self._enhanced_search(payload)
             elif strategy == SearchStrategy.UNIFIED:
                 results = await self._unified_search(payload)
             else:

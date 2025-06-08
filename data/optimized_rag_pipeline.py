@@ -1022,20 +1022,12 @@ class OptimizedRAGPipeline:
                     clean_content, metadata = self.clean_text_content(chunk["content"])
 
                     processed_chunk = {
-                        "id": chunk["id"],
+                        "id": chunk["chunk_id"],
                         "content": chunk["content"],
                         "clean_content": clean_content,
                         "module": module,
-                        "file_path": (
-                            chunk.get("id", "").split("#")[0]
-                            if "#" in chunk.get("id", "")
-                            else ""
-                        ),
-                        "chunk_index": (
-                            int(chunk.get("id", "").split("#")[1])
-                            if "#" in chunk.get("id", "")
-                            else 0
-                        ),
+                        "file_path": chunk.get("file_path", ""),
+                        "chunk_index": chunk.get("chunk_index", 0),
                         "content_type": "markdown",
                         **metadata,
                     }

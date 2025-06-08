@@ -88,15 +88,14 @@ def run_chunking_pipeline() -> bool:
     logger.info("STARTING CHUNKING PIPELINE")
     logger.info("=" * 50)
 
-    chunker = OptimizedChunker()
-    success = chunker.process_repository()
-
-    if success:
+    try:
+        chunker = OptimizedChunker()
+        chunker.process_all()
         logger.info("Chunking pipeline completed successfully!")
-    else:
-        logger.error("Chunking pipeline failed!")
-
-    return success
+        return True
+    except Exception as e:
+        logger.error(f"Chunking pipeline failed with error: {e}")
+        return False
 
 
 def run_embedding_pipeline(
